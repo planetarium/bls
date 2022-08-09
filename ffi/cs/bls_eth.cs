@@ -32,9 +32,9 @@ namespace mcl
         public const int SIGNATURE_UNIT_SIZE = FP_UNIT_SIZE * 3 * (isETH ? 2 : 1);
 
         public const int ID_SERIALIZE_SIZE = ID_UNIT_SIZE * 8;
-        public const int SECRETKEY_SERIALIZE_SIZE = SECRETKEY_UNIT_SIZE * 8;
-        public const int PUBLICKEY_SERIALIZE_SIZE = PUBLICKEY_UNIT_SIZE * 8;
-        public const int SIGNATURE_SERIALIZE_SIZE = SIGNATURE_UNIT_SIZE * 8;
+        public const int SECRETKEY_SERIALIZE_SIZE = 32;
+        public const int PUBLICKEY_SERIALIZE_SIZE = 48;
+        public const int SIGNATURE_SERIALIZE_SIZE = 96;
         public const int MSG_SIZE = 32;
 
         public const string dllName = FP_UNIT_SIZE == 6 ? "bls384_256" : "bls256";
