@@ -1,4 +1,6 @@
 using System;
+using bls;
+using bls.NativeImport;
 
 namespace mcl
 {
@@ -448,7 +450,7 @@ namespace mcl
                     }
                     for (int i = 0; i < n; i++)
                     {
-                        _ = blsSecretKeySetByCSPRNG(ref randVec[i]);
+                        _ = Native.Instance.blsSecretKeySetByCSPRNG(ref randVec[i]);
                     }
                     result = MultiVerify(sigVec, pubVec, msgVec, randVec);
                 } catch (Exception) {
