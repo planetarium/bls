@@ -41,8 +41,28 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="bls.cs" />
+    <Compile Remove="bls\**" />
+    <Compile Remove="BLSWrapper\**" />
+    <Compile Remove="BLSWrapper.Tests\**" />
+    <Compile Remove="tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="bls\**" />
+    <EmbeddedResource Remove="BLSWrapper\**" />
+    <EmbeddedResource Remove="BLSWrapper.Tests\**" />
+    <EmbeddedResource Remove="tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="bls\**" />
+    <None Remove="BLSWrapper\**" />
+    <None Remove="BLSWrapper.Tests\**" />
+    <None Remove="tests\**" />
+    <None Remove=".gitmodules" />
+    <None Remove=".gitignore" />
+    <None Remove="bls12-381-test.py" />
   </ItemGroup>
 </Project>
