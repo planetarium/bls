@@ -13,6 +13,7 @@ namespace bls.NativeImport
         static Native()
         {
             Instance = Auto.Import<Native>(dllName, "1.10", true);
+            Instance.blsInit(BLS.BLS12_381, BLS.COMPILED_TIME_VAR);
         }
 
         public Native()
