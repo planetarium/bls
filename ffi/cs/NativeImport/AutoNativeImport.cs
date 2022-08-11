@@ -401,7 +401,6 @@ namespace bls.NativeImport
                 IntPtr lib = IntPtr.Zero;
                 try
                 {
-                    Console.WriteLine("Trying to load from {0}", spec.Path);
                     lib = importer.LoadLibrary(spec.Path);
                     if (lib == IntPtr.Zero)
                         throw new NativeLoadException("LoadLibrary returned 0", null);
