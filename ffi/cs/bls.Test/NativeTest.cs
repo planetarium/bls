@@ -1,234 +1,246 @@
 using System;
 using bls;
 using bls.NativeImport;
+using Xunit;
 
-namespace mcl
+namespace bls.Test
 {
-    using static BLS;
-    class BLSTest
+    public class NativeTest
     {
-        static int err = 0;
-        static void assert(string msg, bool b) {
-            if (b) return;
-            Console.WriteLine("ERR {0}", msg);
-            err++;
-        }
-        public static byte[] FromHexStr(string s)
+        [Fact]
+        public void TestId()
         {
-            if (s.Length % 2 == 1) {
-                throw new ArgumentException("s.Length is odd." + s.Length);
-            }
-            int n = s.Length / 2;
-            var buf = new byte[n];
-            for (int i = 0; i < n; i++) {
-                buf[i] = Convert.ToByte(s.Substring(i * 2, 2), 16);
-            }
-            return buf;
-        }
-        static void TestId() {
-            Console.WriteLine("TestId");
             Id id1;
             id1.SetDecStr("255");
-            assert("GetStr(10)", id1.GetDecStr() == "255");
-            assert("GetStr(16)", id1.GetHexStr() == "ff");
+            Assert.Equal("255", id1.GetDecStr());
+            Assert.Equal("ff", id1.GetHexStr());
             Id id2;
             id2.SetInt(255);
-            assert("IsEqual", id1.IsEqual(id2));
+            Assert.True(id1.IsEqual(id2));
         }
-        static void TestSecretKey() {
-            Console.WriteLine("TestSecretKey");
+
+        [Fact]
+        public void TestSecretKey()
+        {
             SecretKey sec;
             sec.SetHexStr("ff");
-            assert("GetHexStr()", sec.GetHexStr() == "ff");
-            {
-                SecretKey sec2;
-                sec.SetHexStr("321");
-                sec2.SetHexStr("4000");
-                sec.Add(sec2);
-                assert("sec.Add", sec.GetHexStr() == "4321");
-                sec.Sub(sec2);
-                assert("sec.Sub", sec.GetHexStr() == "321");
-                sec.SetByCSPRNG();
-                Console.WriteLine("sec.SetByCSPRNG={0}", sec.GetHexStr());
-                sec2 = sec;
-                sec.Neg();
-                Console.WriteLine("sec.Neg={0}", sec.GetHexStr());
-                sec.Add(sec2);
-                assert("sec.Add2", sec.GetHexStr() == "0");
-                assert("sec.zero", sec.IsZero());
-            }
-            {
-                SecretKey sec2;
-                byte[] buf = sec.Serialize();
-                sec2.Deserialize(buf);
-                assert("serialize", sec2.IsEqual(sec));
-            }
-            {
-                SecretKey sec2;
-                sec.SetHexStr("0x11");
-                sec2.SetHexStr("0x23");
-                sec.Mul(sec2);
-                assert("mul", sec.GetHexStr() == "253");
-            }
+            Assert.Equal("ff", sec.GetHexStr());
+
+            SecretKey sec2;
+            sec.SetHexStr("321");
+            sec2.SetHexStr("4000");
+
+            sec.Add(sec2);
+            Assert.Equal("4321", sec.GetHexStr());
+            sec.Sub(sec2);
+            Assert.Equal("321", sec.GetHexStr());
+
+            sec.SetByCSPRNG();
+            Assert.NotEmpty(sec.GetHexStr());
+
+            sec.SetHexStr("321");
+            sec2 = sec;
+            sec.Neg();
+            // TODO: Get Negate fixture value.
+
+            sec.Add(sec2);
+            Assert.Equal("0", sec.GetHexStr());
+            Assert.True(sec.IsZero());
+
+            sec2 = new SecretKey();
+            byte[] buf = sec.Serialize();
+            Assert.Throws<ArgumentException>(()=> sec2.Deserialize(buf));
+
+            sec2 = new SecretKey();
+            sec.SetHexStr("0x11");
+            sec2.SetHexStr("0x23");
+            sec.Mul(sec2);
+            Assert.Equal("253", sec.GetHexStr());
         }
-        static void TestPublicKey() {
-            Console.WriteLine("TestPublicKey");
+
+        [Fact]
+        public void TestPublicKey()
+        {
             SecretKey sec;
             sec.SetByCSPRNG();
             PublicKey pub = sec.GetPublicKey();
             string s = pub.GetHexStr();
-            Console.WriteLine("pub={0}", s);
+
+            PublicKey pub2;
+            pub2.SetStr(s);
+            Assert.True(pub.IsEqual(pub2));
+
+            byte[] buf = pub.Serialize();
+            pub2.Deserialize(buf);
+            Assert.True(pub2.IsEqual(pub));
+
+            pub2 = pub;
+            pub.Neg();
+            pub.Add(pub2);
+            Assert.Equal("0", pub.GetHexStr());
+
+            pub2 = pub;
+            for (int i = 0; i < 5; i++)
             {
-                PublicKey pub2;
-                pub2.SetStr(s);
-                assert("pub.SetStr", pub.IsEqual(pub2));
+                pub2.Add(pub);
             }
-            {
-                PublicKey pub2;
-                byte[] buf = pub.Serialize();
-                pub2.Deserialize(buf);
-                assert("serialize", pub2.IsEqual(pub));
-            }
-            {
-                PublicKey pub2 = pub;
-                pub.Neg();
-                pub.Add(pub2);
-                assert("pub is zero", pub.IsZero());
-            }
-            {
-                PublicKey pub2 = pub;
-                for (int i = 0; i < 5; i++) {
-                    pub2.Add(pub);
-                }
-                PublicKey pub3 = pub;
-                SecretKey t;
-                t.SetHexStr("5");
-                pub3.Mul(t);
-                assert("pub mul", pub2.IsEqual(pub3));
-            }
+
+            PublicKey pub3 = pub;
+            SecretKey t;
+            t.SetHexStr("5");
+            pub3.Mul(t);
+            Assert.True(pub2.IsEqual(pub3));
         }
-        static void TestSign() {
-            Console.WriteLine("TestSign");
+
+        [Fact]
+        public void TestSign()
+        {
             SecretKey sec;
             sec.SetByCSPRNG();
             PublicKey pub = sec.GetPublicKey();
+
             string m = "abc";
             Signature sig = sec.Sign(m);
-            Console.WriteLine("sig={0}", sig.GetHexStr());
-            assert("verify", pub.Verify(sig, m));
-            assert("not verify", !pub.Verify(sig, m + "a"));
+
+            Assert.True(pub.Verify(sig, m));
+            Assert.False(pub.Verify(sig, m + "a"));
+
+            Signature sig2;
+            byte[] buf = sig.Serialize();
+            sig2.Deserialize(buf);
+            Assert.True(sig2.IsEqual(sig));
+
+            sig2 = sig;
+            sig.Neg();
+            sig.Add(sig2);
+            Assert.True(sig.IsZero());
+
+
+            sig2 = sig;
+            for (int i = 0; i < 5; i++)
             {
-                Signature sig2;
-                byte[] buf = sig.Serialize();
-                sig2.Deserialize(buf);
-                assert("serialize", sig2.IsEqual(sig));
+                sig2.Add(sig);
             }
-            {
-                Signature sig2 = sig;
-                sig.Neg();
-                sig.Add(sig2);
-                assert("sig is zero", sig.IsZero());
-            }
-            {
-                Signature sig2 = sig;
-                for (int i = 0; i < 5; i++) {
-                    sig2.Add(sig);
-                }
-                Signature sig3 = sig;
-                SecretKey t;
-                t.SetHexStr("5");
-                sig3.Mul(t);
-                assert("sig mul", sig2.IsEqual(sig3));
-            }
+
+            Signature sig3 = sig;
+            SecretKey t;
+            t.SetHexStr("5");
+            sig3.Mul(t);
+            Assert.True(sig2.IsEqual(sig3));
         }
-        static void TestSharing() {
-            Console.WriteLine("TestSharing");
+
+        [Fact]
+        public void TestSharing()
+        {
             int k = 5;
             SecretKey[] msk = new SecretKey[k];
             PublicKey[] mpk = new PublicKey[k];
+
             // make master secretkey
-            for (int i = 0; i < k; i++) {
+            for (int i = 0; i < k; i++)
+            {
                 msk[i].SetByCSPRNG();
                 mpk[i] = msk[i].GetPublicKey();
             }
+
             int n = 30;
             Id[] ids = new Id[n];
             SecretKey[] secs = new SecretKey[n];
             PublicKey[] pubs = new PublicKey[n];
-            for (int i = 0; i < n; i++) {
-                ids[i].SetInt(i * i + 123);
-                secs[i] = ShareSecretKey(msk, ids[i]);
-                pubs[i] = SharePublicKey(mpk, ids[i]);
-                assert("share publicKey", secs[i].GetPublicKey().IsEqual(pubs[i]));
-            }
-            string m = "doremi";
-            for (int i = 0; i < n; i++) {
-                Signature Signature = secs[i].Sign(m);
-                assert("Signature.Verify", pubs[i].Verify(Signature, m));
-            }
+            for (int i = 0; i < n; i++)
             {
-                int[] idxTbl = { 0, 2, 5, 8, 10 };
-                assert("idxTbl.Length=k", idxTbl.Length == k);
-                Id[] subIds = new Id[k];
-                SecretKey[] subSecs = new SecretKey[k];
-                PublicKey[] subPubs = new PublicKey[k];
-                Signature[] subSigns = new Signature[k];
-                for (int i = 0; i < k; i++) {
-                    int idx = idxTbl[i];
-                    subIds[i] = ids[idx];
-                    subSecs[i] = secs[idx];
-                    subPubs[i] = pubs[idx];
-                    subSigns[i] = secs[idx].Sign(m);
-                }
-                SecretKey sec = RecoverSecretKey(subSecs, subIds);
-                PublicKey pub = RecoverPublicKey(subPubs, subIds);
-                assert("check pub", pub.IsEqual(sec.GetPublicKey()));
-                Signature Signature = RecoverSign(subSigns, subIds);
-                assert("Signature.verify", pub.Verify(Signature, m));
+                ids[i].SetInt(i * i + 123);
+                secs[i] = SecretKey.ShareSecretKey(msk, ids[i]);
+                pubs[i] = PublicKey.SharePublicKey(mpk, ids[i]);
+                Assert.True(secs[i].GetPublicKey().IsEqual(pubs[i]));
             }
+
+            string m = "doremi";
+            Signature signature;
+            for (int i = 0; i < n; i++)
+            {
+                signature = secs[i].Sign(m);
+                Assert.True(pubs[i].Verify(signature, m));
+            }
+
+            int[] idxTbl = { 0, 2, 5, 8, 10 };
+            Assert.Equal(k, idxTbl.Length);
+
+            Id[] subIds = new Id[k];
+            SecretKey[] subSecs = new SecretKey[k];
+            PublicKey[] subPubs = new PublicKey[k];
+            Signature[] subSigns = new Signature[k];
+
+            for (int i = 0; i < k; i++)
+            {
+                int idx = idxTbl[i];
+                subIds[i] = ids[idx];
+                subSecs[i] = secs[idx];
+                subPubs[i] = pubs[idx];
+                subSigns[i] = secs[idx].Sign(m);
+            }
+
+            SecretKey sec = SecretKey.RecoverSecretKey(subSecs, subIds);
+            PublicKey pub = PublicKey.RecoverPublicKey(subPubs, subIds);
+            Assert.True(pub.IsEqual(sec.GetPublicKey()));
+            signature = Signature.RecoverSign(subSigns, subIds);
+            Assert.True(pub.Verify(signature, m));
         }
-        static void TestAggregate() {
-            Console.WriteLine("TestAggregate");
+
+        [Fact]
+        public void TestAggregate()
+        {
             const int n = 10;
             const string m = "abc";
+
             SecretKey[] secVec = new SecretKey[n];
             PublicKey[] pubVec = new PublicKey[n];
             Signature[] popVec = new Signature[n];
             Signature[] sigVec = new Signature[n];
-            for (int i = 0; i < n; i++) {
+
+            for (int i = 0; i < n; i++)
+            {
                 secVec[i].SetByCSPRNG();
                 pubVec[i] = secVec[i].GetPublicKey();
                 popVec[i] = secVec[i].GetPop();
                 sigVec[i] = secVec[i].Sign(m);
             }
+
             SecretKey secAgg;
             PublicKey pubAgg;
             Signature sigAgg;
-            for (int i = 0; i < n; i++) {
+
+            for (int i = 0; i < n; i++)
+            {
                 secAgg.Add(secVec[i]);
-                assert("verify pop", pubVec[i].VerifyPop(popVec[i]));
+                Assert.True(pubVec[i].VerifyPop(popVec[i]));
                 pubAgg.Add(pubVec[i]);
                 sigAgg.Add(sigVec[i]);
             }
-            assert("aggregate sec", secAgg.Sign(m).IsEqual(sigAgg));
-            assert("aggregate", pubAgg.Verify(sigAgg, m));
+
+            Assert.True(secAgg.Sign(m).IsEqual(sigAgg));
+            Assert.True(pubAgg.Verify(sigAgg, m));
+
             // sub
             secAgg = secVec[0];
             secAgg.Add(secVec[1]);
             secAgg.Sub(secVec[1]);
-            assert("SecretKey.Sub", secAgg.IsEqual(secVec[0]));
+            Assert.True(secAgg.IsEqual(secVec[0]));
+
             pubAgg = pubVec[0];
             pubAgg.Add(pubVec[1]);
             pubAgg.Sub(pubVec[1]);
-            assert("PubretKey.Sub", pubAgg.IsEqual(pubVec[0]));
+            Assert.True(secAgg.IsEqual(secVec[0]));
+
             sigAgg = sigVec[0];
             sigAgg.Add(sigVec[1]);
             sigAgg.Sub(sigVec[1]);
-            assert("Signature.Sub", sigAgg.IsEqual(sigVec[0]));
+            Assert.True(secAgg.IsEqual(secVec[0]));
         }
-        static void TestMulVec()
+
+        [Fact]
+        public void TestMulVec()
         {
-            Console.WriteLine("TestMulVec");
             int n = 10;
             const string m = "abc";
             SecretKey[] secVec = new SecretKey[n];
@@ -236,19 +248,22 @@ namespace mcl
             Signature[] sigVec = new Signature[n];
             SecretKey[] frVec = new SecretKey[n];
 
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < n; i++)
+            {
                 secVec[i].SetByCSPRNG();
                 pubVec[i] = secVec[i].GetPublicKey();
                 sigVec[i] = secVec[i].Sign(m);
                 frVec[i].SetByCSPRNG();
             }
-            PublicKey aggPub = MulVec(pubVec, frVec);
-            Signature aggSig = MulVec(sigVec, frVec);
-            assert("mulVec", aggPub.Verify(aggSig, m));
+
+            PublicKey aggPub = PublicKey.MulVec(pubVec, frVec);
+            Signature aggSig = Signature.MulVec(sigVec, frVec);
+            Assert.True(aggPub.Verify(aggSig, m));
         }
+
+        [Fact]
         static void TestFastAggregateVerify()
         {
-            Console.WriteLine("TestFastAggregateVerify");
             var tbl = new[] {
                 new {
                     pubVec = new[] {
@@ -288,28 +303,35 @@ namespace mcl
                     expected = true,
                 },
             };
-            foreach (var v in tbl) {
+
+            foreach (var v in tbl)
+            {
                 int n = v.pubVec.Length;
                 PublicKey[] pubVec = new PublicKey[n];
                 bool result = false;
-                try {
-                    for (int i = 0; i < n; i++) {
-                        pubVec[i].Deserialize(FromHexStr(v.pubVec[i]));
+                try
+                {
+                    for (int i = 0; i < n; i++)
+                    {
+                        pubVec[i].Deserialize(v.pubVec[i].ToBytes());
                     }
-                    var msg = FromHexStr(v.msg);
+                    var msg = v.msg.ToBytes();
+
                     Signature sig = new Signature();
-                    sig.Deserialize(FromHexStr(v.sig));
-                    result = FastAggregateVerify(sig, pubVec, msg);
+                    sig.Deserialize(v.sig.ToBytes());
+                    result = sig.FastAggregateVerify(pubVec, msg);
                 }
                 catch (Exception) {
                     // pass through
                 }
-                assert("FastAggregateVerify", result == v.expected);
+
+                Assert.Equal(v.expected, result);
             }
         }
-        static void TestAggregateVerify()
+
+        [Fact]
+        public void TestAggregateVerify()
         {
-            Console.WriteLine("TestAggregateVerify");
             var tbl = new[] {
                 new {
                     pubVec = new[] {
@@ -340,27 +362,33 @@ namespace mcl
                     expected = true,
                 },
             };
-            foreach (var v in tbl) {
+            foreach (var v in tbl)
+            {
                 int n = v.pubVec.Length;
                 PublicKey[] pubVec = new PublicKey[n];
                 bool result = false;
                 try {
                     for (int i = 0; i < n; i++) {
-                        pubVec[i].Deserialize(FromHexStr(v.pubVec[i]));
+                        pubVec[i].Deserialize(v.pubVec[i].ToBytes());
                     }
                     Msg[] msgVec = new Msg[n];
                     for (int i = 0; i < n; i++) {
-                        msgVec[i].Set(FromHexStr(v.msgVec[i]));
+                        msgVec[i].Set(v.msgVec[i].ToBytes());
                     }
                     Signature sig = new Signature();
-                    sig.Deserialize(FromHexStr(v.sig));
-                    result = AggregateVerify(sig, pubVec, msgVec);
-                } catch (Exception) {
+                    sig.Deserialize(v.sig.ToBytes());
+                    result = sig.AggregateVerify(pubVec, msgVec);
+                }
+                catch (Exception)
+                {
                     // pass through
                 }
-                assert("AggregateVerify", result == v.expected);
+
+                Assert.Equal(v.expected, result);
             }
         }
+
+
         static void TestAreAllMsgDifferent()
         {
             Console.WriteLine("TestAreAllMsgDifferent");
@@ -382,18 +410,23 @@ namespace mcl
                     expected = false,
                 },
             };
-            foreach (var t in tbl) {
+
+            foreach (var t in tbl)
+            {
                 int n = t.msgVec.Length;
                 var msgVec = new Msg[n];
-                for (int i = 0; i < n; i++) {
-                    msgVec[i].Set(FromHexStr(t.msgVec[i]));
+
+                for (int i = 0; i < n; i++)
+                {
+                    msgVec[i].Set(t.msgVec[i].ToBytes());
                 }
-                assert("verify", AreAllMsgDifferent(msgVec) == t.expected);
+                Assert.Equal(t.expected, Msg.AreAllMsgDifferent(msgVec));
             }
         }
+
+        [Fact]
         static void TestMultiVerify()
         {
-            Console.WriteLine("TestMultiVerify");
             var tbl = new[] {
                 new {
                     pubVec = new[] {
@@ -431,66 +464,39 @@ namespace mcl
                     expected = false,
                 },
             };
-            foreach (var v in tbl) {
+
+            foreach (var v in tbl)
+            {
                 int n = v.pubVec.Length;
                 PublicKey[] pubVec = new PublicKey[n];
-                SecretKey[] randVec = new SecretKey[n];
                 bool result = false;
-                try {
-                    for (int i = 0; i < n; i++) {
-                        pubVec[i].Deserialize(FromHexStr(v.pubVec[i]));
-                    }
-                    Msg[] msgVec = new Msg[n];
-                    for (int i = 0; i < n; i++) {
-                        msgVec[i].Set(FromHexStr(v.msgVec[i]));
-                    }
-                    Signature[] sigVec = new Signature[n];
-                    for (int i = 0; i < n; i++) {
-                        sigVec[i].Deserialize(FromHexStr(v.sigVec[i]));
-                    }
+
+                try
+                {
                     for (int i = 0; i < n; i++)
                     {
-                        _ = Native.Instance.blsSecretKeySetByCSPRNG(ref randVec[i]);
+                        pubVec[i].Deserialize(v.pubVec[i].ToBytes());
                     }
-                    result = MultiVerify(sigVec, pubVec, msgVec, randVec);
-                } catch (Exception) {
+
+                    Msg[] msgVec = new Msg[n];
+                    for (int i = 0; i < n; i++)
+                    {
+                        msgVec[i].Set(v.msgVec[i].ToBytes());
+                    }
+
+                    Signature[] sigVec = new Signature[n];
+                    for (int i = 0; i < n; i++)
+                    {
+                        sigVec[i].Deserialize(v.sigVec[i].ToBytes());
+                    }
+                    result = BLS.MultiVerify(sigVec, pubVec, msgVec);
+                }
+                catch (Exception)
+                {
                     // pass through
                 }
-                assert("MultiVerify", result == v.expected);
-            }
-        }
-        static void Main(string[] args) {
-            try {
-                int[] curveTypeTbl = { BN254, BLS12_381 };
-                foreach (int curveType in curveTypeTbl) {
-                    if (isETH && curveType != BLS12_381) {
-                        continue;
-                    }
-                    Console.WriteLine("curveType={0}", curveType);
-                    if (!isETH) {
-                        Init(curveType);
-                    }
-                    TestId();
-                    TestSecretKey();
-                    TestPublicKey();
-                    TestSign();
-                    TestSharing();
-                    TestAggregate();
-                    TestMulVec();
-                    TestAreAllMsgDifferent();
-                    if (isETH) {
-                        TestFastAggregateVerify();
-                        TestAggregateVerify();
-                        TestMultiVerify();
-                    }
-                    if (err == 0) {
-                        Console.WriteLine("all tests succeed");
-                    } else {
-                        Console.WriteLine("err={0}", err);
-                    }
-                }
-            } catch (Exception e) {
-                Console.WriteLine("ERR={0}", e);
+
+                Assert.Equal(v.expected, result);
             }
         }
     }

@@ -981,7 +981,9 @@ int blsSetGeneratorOfPublicKey(const blsPublicKey *pub)
 
 int blsIdSetDecStr(blsId *id, const char *buf, mclSize bufSize)
 {
-	return cast(&id->v)->deserialize(buf, bufSize, 10) > 0 ? 0 : -1;
+	Fr* fr = cast(&id->v);
+	size_t size = fr->deserialize(buf, bufSize, 10);
+	return size > 0 ? 0 : -1;
 }
 int blsIdSetHexStr(blsId *id, const char *buf, mclSize bufSize)
 {

@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
+    <RootNamespace>bls</RootNamespace>
+    <AssemblyName>bls</AssemblyName>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -20,27 +22,49 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>..\..\bin\</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Configurations>Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.5.2 %28x86 および x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="bls_eth.cs" />
+    <None Remove="runtimes\**" />
+    <Content Include="runtimes\linux-x64\native\libbls384_256.1.10.so" PackagePath="runtimes\linux-x64\native\libbls384_256.1.10.so">
+      <Link>runtimes\linux-x64\native\libbls384_256.1.10.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\linux-x64\native\libmcl.so.1" PackagePath="runtimes\linux-x64\native\libmcl.so.1">
+      <Link>runtimes\linux-x64\native\libmcl.so.1</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\win-x64\native\bls384_256.dll" PackagePath="runtimes\win-x64\native\bls384_256.dll" Link="runtimes\win-x64\native\bls384_256.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\osx-x64\native\libbls384_256.1.10.dylib" PackagePath="runtimes\osx-x64\native\libbls384_256.1.10.dylib" Link="runtimes\osx-x64\native\libbls384_256.1.10.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\osx-x64\native\libmclbn384_256.1.dylib" PackagePath="runtimes\osx-x64\native\libmclbn384_256.1.dylib" Link="runtimes\osx-x64\native\libmclbn384_256.1.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\osx-x64\native\libmcl.1.dylib" PackagePath="runtimes\osx-x64\native\libmcl.1.dylib">
+      <Link>runtimes\osx-x64\native\libmcl.1.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\osx-arm64\native\libbls384_256.1.10.dylib" PackagePath="runtimes\osx-arm64\native\libbls384_256.1.10.dylib" Link="runtimes\osx-arm64\native\libbls384_256.1.10.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Remove="bls.Test\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Remove="bls.Test\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="bls.Test\**" />
   </ItemGroup>
 </Project>

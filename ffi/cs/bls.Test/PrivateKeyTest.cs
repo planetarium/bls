@@ -1,17 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using mcl;
+using bls;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace BLSWrapper.Tests
+namespace bls.Test
 {
-    public class PrivateKey
+    public class PrivateKeyTest
     {
         private ITestOutputHelper _testOutputHelper;
 
-        public PrivateKey(ITestOutputHelper testOutputHelper)
+        public PrivateKeyTest(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
         }
@@ -19,19 +19,28 @@ namespace BLSWrapper.Tests
         [Fact]
         public void InvalidLengthPrivateKey()
         {
-            var privateKey = new byte[BLSWrapper.PrivateKeySize - 1];
+            var privateKey = new byte[BLS.SECRETKEY_SERIALIZE_SIZE - 1];
             privateKey[0] = 1;
-            BLS.SecretKey sk;
+            SecretKey sk;
 
-            Assert.Throws<ArithmeticException>(
-                () => sk.Deserialize(privateKey));
+            Assert.Throws<ArgumentException>(() => sk.Deserialize(privateKey));
+        }
+
+        [Fact]
+        public void ZeroValuePrivateKey()
+        {
+            var privateKey = new byte[BLS.SECRETKEY_SERIALIZE_SIZE];
+            SecretKey sk;
+
+            Assert.Throws<ArgumentException>(() => sk.Deserialize(privateKey));
         }
 
         [Fact]
         public void LoadTestSuitePrivateKeys()
         {
-            var files = Directory.GetFiles("../../../../tests/sign/");
-
+            var files = Directory.GetFiles(
+                "../../../tests/sign/").Except(
+                new[] { "../../../tests/sign/sign_case_zero_privkey.yaml" });
 
             foreach (var file in files)
             {
@@ -39,9 +48,9 @@ namespace BLSWrapper.Tests
                 using FileStream fReader = File.OpenRead(file);
                 using var sReader = new StreamReader(fReader);
 
-                var testYaml = BLSWrapperTestBase.ParseTest(sReader);
+                var testYaml = YAMLTestBase.ParseTest(sReader);
                 byte[] privateKey = new byte[]{ 0x00, };
-                BLS.SecretKey sk;
+                SecretKey sk;
 
                 // MCL follows the system endianess, and test suite uses big endian.
                 privateKey = testYaml.Input["privkey"].ToBytes();

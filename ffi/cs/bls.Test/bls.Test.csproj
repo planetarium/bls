@@ -9,6 +9,8 @@
         <OutputType>Library</OutputType>
 
         <TargetFramework>net6.0</TargetFramework>
+
+        <RootNamespace>bls.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\BLSWrapper\BLSWrapper.csproj" />
+      <ProjectReference Include="..\bls.csproj" />
     </ItemGroup>
 
 </Project>
