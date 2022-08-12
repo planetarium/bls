@@ -3,12 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using BLSWrapper.Tests;
-using mcl;
+using bls;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace BLSWrapper.Tests
+namespace bls.Test
 {
     public class Sign
     {
@@ -22,36 +21,44 @@ namespace BLSWrapper.Tests
         [Fact]
         public void SimpleSign()
         {
-            var privateKey = BLSWrapper.GeneratePrivateKey();
-            var publicKey = BLSWrapper.GetPublicKey(privateKey);
+            SecretKey privateKey;
+            privateKey.SetByCSPRNG();
+
+            var publicKey = privateKey.GetPublicKey();
             var message = new byte[] { 0xff, 0xff, 0xff, 0xff };
             var hashedMessage = SHA256.Create().ComputeHash(message);
 
-            var sign = BLSWrapper.Sign(privateKey, hashedMessage);
-            Assert.NotNull(sign);
-            var verify = BLSWrapper.Verify(publicKey, sign, hashedMessage);
+            var sign = privateKey.Sign(hashedMessage);
+            var serializedSign = sign.Serialize();
+            Assert.NotNull(serializedSign);
+
+            var verify = publicKey.Verify(sign, hashedMessage);
             Assert.True(verify);
         }
 
         [Fact]
         public void SimpleSignSerialize()
         {
-            var privateKey = BLSWrapper.GeneratePrivateKey();
+            SecretKey privateKey;
+            privateKey.SetByCSPRNG();
+
             var message = new byte[] { 0xff, 0xff, 0xff, 0xff };
             var hashedMessage = SHA256.Create().ComputeHash(message);
-            var sign = BLSWrapper.Sign(privateKey, hashedMessage);
+            var sign = privateKey.Sign(hashedMessage);
+            var serializedSign = sign.Serialize();
 
-            BLS.Signature sig;
+            Signature testSign;
+            testSign.Deserialize(sign.Serialize());
 
-            sig.Deserialize(sign);
-            var unmarshal = sig.Serialize().ToArray();
-            Assert.Equal(sign, unmarshal);
+            var unmarshal = testSign.Serialize();
+            Assert.Equal(serializedSign, unmarshal);
         }
 
         [Fact]
         public void DeserializeTest()
         {
-            var files = Directory.GetFiles("../../../../tests/deserialization_G2/", "deserialization_succeeds_*");
+            var files = Directory.GetFiles(
+                "../../../../tests/deserialization_G2/", "deserialization_succeeds_*");
 
             foreach (var file in files)
             {
@@ -59,12 +66,12 @@ namespace BLSWrapper.Tests
                 using FileStream fReader = File.OpenRead(file);
                 using var sReader = new StreamReader(fReader);
 
-                var testYaml = BLSWrapperTestBase.ParseTest(sReader);
+                var testYaml = YAMLTestBase.ParseTest(sReader);
 
                 var signature = testYaml.Input["signature"].ToBytes();
                 var expectedResult = bool.Parse(testYaml.Output);
 
-                BLS.Signature sig;
+                Signature sig;
                 sig.Deserialize(signature);
 
                 _testOutputHelper.WriteLine("Public key: \n" + BitConverter.ToString(signature));
@@ -76,7 +83,8 @@ namespace BLSWrapper.Tests
         [Fact]
         public void DeserializeFailingTest()
         {
-            var files = Directory.GetFiles("../../../../tests/deserialization_G2/", "deserialization_fails_*");
+            var files = Directory.GetFiles(
+                "../../../../tests/deserialization_G2/", "deserialization_fails_*");
 
             foreach (var file in files)
             {
@@ -84,13 +92,22 @@ namespace BLSWrapper.Tests
                 using FileStream fReader = File.OpenRead(file);
                 using var sReader = new StreamReader(fReader);
 
-                var testYaml = BLSWrapperTestBase.ParseTest(sReader);
+                var testYaml = YAMLTestBase.ParseTest(sReader);
 
                 var signature = testYaml.Input["signature"].ToBytes();
                 var expectedResult = bool.Parse(testYaml.Output);
 
-                BLS.Signature sig;
-                Assert.Throws<ArithmeticException>(() => sig.Deserialize(signature));
+                Signature sig;
+
+                if (signature.Length != BLS.SIGNATURE_SERIALIZE_SIZE)
+                {
+                    Assert.Throws<ArgumentException>(
+                        () => sig.Deserialize(signature));
+                }
+                else
+                {
+                    Assert.Throws<ArithmeticException>(() => sig.Deserialize(signature));
+                }
 
                 _testOutputHelper.WriteLine("Public key: \n" + BitConverter.ToString(signature));
                 _testOutputHelper.WriteLine("Expected results: \n" + expectedResult);
@@ -110,14 +127,22 @@ namespace BLSWrapper.Tests
                 using FileStream fReader = File.OpenRead(file);
                 using var sReader = new StreamReader(fReader);
 
-                var testYaml = BLSWrapperTestSingleBase.ParseTest(sReader);
+                var testYaml = YAMLTestSingleBase.ParseTest(sReader);
 
                 var signatures = testYaml.Input.Select(x => x.ToBytes()).ToArray();
 
                 var aggSignature = signatures.FirstOrDefault();
-                aggSignature ??= new byte[BLSWrapper.SignatureSize];
+                aggSignature ??= new byte[BLS.SIGNATURE_SERIALIZE_SIZE];
 
-                var expectedSignature = new byte[BLSWrapper.SignatureSize];
+                if (signatures.Length == 0)
+                {
+                    continue;
+                }
+
+                Signature aggSig;
+                aggSig.Deserialize(aggSignature);
+
+                var expectedSignature = new byte[BLS.SIGNATURE_SERIALIZE_SIZE];
 
                 if (!(testYaml.Output is null))
                 {
@@ -127,14 +152,18 @@ namespace BLSWrapper.Tests
 
                 if (signatures.Length == 1)
                 {
-                    aggSignature = BLSWrapper.AggregateSignatures(aggSignature, aggSignature);
+                    aggSignature = aggSig.Serialize();
                 }
                 else
                 {
                     foreach (var nextSign in nextSignatures)
                     {
-                        aggSignature = BLSWrapper.AggregateSignatures(aggSignature, nextSign);
+                        Signature currSign;
+                        currSign.Deserialize(nextSign);
+                        aggSig.Add(currSign);
                     }
+
+                    aggSignature = aggSig.Serialize();
                 }
 
                 _testOutputHelper.WriteLine("Aggregated Signature: \n" + BitConverter.ToString(aggSignature));
@@ -157,29 +186,33 @@ namespace BLSWrapper.Tests
                 using FileStream fReader = File.OpenRead(file);
                 using var sReader = new StreamReader(fReader);
 
-                var testYaml = BLSWrapperTestBase.ParseTest(sReader);
+                var testYaml = YAMLTestBase.ParseTest(sReader);
 
                 var privateKey = testYaml.Input["privkey"].ToBytes();
                 var message = testYaml.Input["message"].ToBytes();
 
+                SecretKey secretKey;
+
                 if (privateKey.SequenceEqual(new byte[privateKey.Length]))
                 {
-                    Assert.Throws<BLSInvalidPrivateKeyException>(
-                        () => BLSWrapper.Sign(privateKey, message));
+                    Assert.Throws<ArgumentException>(
+                        () => secretKey.Deserialize(privateKey));
                 }
                 else
                 {
                     var expectedSign = testYaml.Output.ToBytes();
+                    secretKey.Deserialize(privateKey);
 
-                    var sign = BLSWrapper.Sign(privateKey, message);
+                    var sign = secretKey.Sign(message);
+                    var serializedSign = sign.Serialize();
 
                     _testOutputHelper.WriteLine("Private key: \n" + BitConverter.ToString(privateKey));
                     _testOutputHelper.WriteLine("Message in String: \n" + Encoding.ASCII.GetString(message));
                     _testOutputHelper.WriteLine("Message: \n" + BitConverter.ToString(message));
-                    _testOutputHelper.WriteLine("Signature: \n" + BitConverter.ToString(sign));
+                    _testOutputHelper.WriteLine("Signature: \n" + BitConverter.ToString(serializedSign));
                     _testOutputHelper.WriteLine("Expected Signature: \n" + BitConverter.ToString(expectedSign));
                     _testOutputHelper.WriteLine("======");
-                    Assert.Equal(expectedSign, sign);
+                    Assert.Equal(expectedSign, serializedSign);
                 }
             }
 
