@@ -1,0 +1,84 @@
+name: posix-build
+
+on: [pull_request]
+
+jobs:
+  linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Initialize submodule
+      run : git submodule update --init --recursive
+    - name: Build bls
+      run: |
+        mkdir build
+        cd build
+        cmake ../ -DBLS_ETH=1
+        sudo make -j4
+    - name: Upload Artifact (bls)
+      uses: actions/upload-artifact@v3
+      with:
+        name: libbls384_256.so
+        path: ./build/lib/libbls384_256.so.*
+        retention-days: 1
+
+    - name: Upload Artifact (mcl)
+      uses: actions/upload-artifact@v3
+      with:
+        name: libmcl.so
+        path: ./build/lib/libmcl.so.*
+        retention-days: 1
+
+    - name: Upload Artifact (libmclbn)
+      uses: actions/upload-artifact@v3
+      with:
+        name: libmclbn384_256.so
+        path: ./build/lib/libmclbn384_256.so.*
+        retention-days: 1
+
+  osx:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: 6.0.x
+    - name: Initialize submodule
+      run : git submodule update --init --recursive
+    - name: Build bls
+      run: |
+        mkdir build
+        cd build
+        cmake ../ -DBLS_ETH=1
+        sudo make -j4
+    - name: Upload Artifact (bls)
+      uses: actions/upload-artifact@v3
+      with:
+        name: libbls384_256.dylib
+        path: ./build/lib/libbls384_256.*.dylib
+        retention-days: 1
+
+    - name: Upload Artifact (mcl)
+      uses: actions/upload-artifact@v3
+      with:
+        name: libmcl.dylib
+        path: ./build/lib/libmcl.*.dylib
+        retention-days: 1
+
+    - name: Upload Artifact (libmclbn)
+      uses: actions/upload-artifact@v3
+      with:
+        name: libmclbn384_256.dylib
+        path: ./build/lib/libmclbn384_256.*.dylib
+        retention-days: 1
