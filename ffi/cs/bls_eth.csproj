@@ -79,5 +79,13 @@
     <Content Include="runtimes\osx-arm64\native\libbls384_256.1.10.dylib" PackagePath="runtimes\osx-arm64\native\libbls384_256.1.10.dylib" Link="runtimes\osx-arm64\native\libbls384_256.1.10.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="runtimes\osx-arm64\native\libmclbn384_256.1.dylib" PackagePath="runtimes\osx-arm64\native\libmclbn384_256.1.dylib" Link="runtimes\osx-arm64\native\libmclbn384_256.1.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="runtimes\osx-arm64\native\libmcl.1.dylib" PackagePath="runtimes\osx-arm64\native\libmcl.1.dylib">
+      <Link>runtimes\osx-arm64\native\libmcl.1.dylib</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
   </ItemGroup>
 </Project>
