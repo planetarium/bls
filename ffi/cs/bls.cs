@@ -9,6 +9,7 @@
 */
 
 using System;
+using System.Linq;
 using bls.NativeImport;
 
 namespace bls
@@ -51,9 +52,16 @@ namespace bls
             }
 
             SecretKey[] randVec = new SecretKey[pubVec.Length];
-            foreach (var rand in randVec)
+            for (int i = 0; i < randVec.Length; ++i)
             {
-                rand.SetByCSPRNG();
+                var otherRandVec = randVec.Except(new[] { randVec[i] }).ToArray();
+                randVec[i].SetByCSPRNG();
+
+                // Make sure random values are unique.
+                while (otherRandVec.Any(x => x.IsEqual(randVec[i])))
+                {
+                    randVec[i].SetByCSPRNG();
+                }
             }
 
             return Native.Instance.blsMultiVerify(
