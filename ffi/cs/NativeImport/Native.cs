@@ -1,6 +1,4 @@
-using mcl;
-
-// ReSharper disable InconsistentNaming
+using System;
 
 namespace bls.NativeImport
 {
@@ -13,7 +11,19 @@ namespace bls.NativeImport
         static Native()
         {
             Instance = Auto.Import<Native>(dllName, "1.10", true);
-            Instance.blsInit(BLS.BLS12_381, BLS.COMPILED_TIME_VAR);
+
+            if (!BLS.isETH)
+            {
+                throw new PlatformNotSupportedException("BLS is not set in ethereum mode.");
+            }
+            if (!Environment.Is64BitProcess) {
+                throw new PlatformNotSupportedException("not 64-bit system");
+            }
+            int err = Instance.blsInit(BLS.BLS12_381, BLS.COMPILED_TIME_VAR);
+            if (err != 0)
+            {
+                throw new ArgumentException("blsInit");
+            }
         }
 
         public Native()

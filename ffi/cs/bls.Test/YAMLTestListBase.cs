@@ -1,23 +1,22 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
-using mcl;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace BLSWrapper.Tests
+namespace bls.Test
 {
-    public sealed class BLSWrapperTestSingleBase
+    public sealed class YAMLTestListBase
     {
-        public List<string> Input { get; set; }
+        public Dictionary<string, List<string>> Input { get; set; }
 
         public string Output { get; set; }
 
-        public static BLSWrapperTestSingleBase ParseTest(StreamReader yaml)
+        public static YAMLTestListBase ParseTest(StreamReader yaml)
         {
             var deserializer = new DeserializerBuilder().
                 WithNamingConvention(CamelCaseNamingConvention.Instance).
                 Build();
-            return deserializer.Deserialize<BLSWrapperTestSingleBase>(yaml);
+            return deserializer.Deserialize<YAMLTestListBase>(yaml);
         }
     }
 }

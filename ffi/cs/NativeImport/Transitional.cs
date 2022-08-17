@@ -47,14 +47,16 @@ namespace bls.NativeImport
 {
     internal static class CurrentFramework
     {
-        public static AssemblyBuilder DefineDynamicAssembly(AssemblyName name, AssemblyBuilderAccess access)
+        public static AssemblyBuilder DefineDynamicAssembly(
+            AssemblyName name, AssemblyBuilderAccess access)
 #if NET40
             => AppDomain.CurrentDomain.DefineDynamicAssembly(name, access);
 #else
             => AssemblyBuilder.DefineDynamicAssembly(name, access);
 #endif
 
-        public static unsafe string CreateString(sbyte* value, int startIndex, int length, System.Text.Encoding enc)
+        public static unsafe string CreateString(
+            sbyte* value, int startIndex, int length, System.Text.Encoding enc)
 #if NETSTANDARD1_6
         {
             int vlength = enc.GetCharCount((byte*)value, length);
@@ -177,7 +179,8 @@ namespace bls.NativeImport
 //            }
 //        }
 //
-//        internal static Architecture ProcessArchitecture => Environment.Is64BitProcess? Architecture.X64 : Architecture.X86;
+//        internal static Architecture ProcessArchitecture =>
+//          Environment.Is64BitProcess? Architecture.X64 : Architecture.X86;
 //    }
 //}
 //#endif
