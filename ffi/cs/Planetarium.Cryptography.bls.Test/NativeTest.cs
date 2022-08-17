@@ -1,9 +1,9 @@
 using System;
-using bls;
-using bls.NativeImport;
+using System.Security.Cryptography;
+using System.Text;
 using Xunit;
 
-namespace bls.Test
+namespace Planetarium.Cryptography.bls.Test
 {
     public class NativeTest
     {

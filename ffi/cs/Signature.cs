@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using bls.NativeImport;
+using Planetarium.Cryptography.bls.NativeImport;
 
-namespace bls
+namespace Planetarium.Cryptography.bls
 {
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct Signature
@@ -161,7 +161,7 @@ namespace bls
                     throw new ArgumentException("pubVec is empty");
                 }
 
-                fixed(Signature* s = &this)
+                fixed (Signature* s = &this)
                 {
                     fixed(PublicKey* p = &pubVec[0])
                     {
@@ -194,12 +194,8 @@ namespace bls
             }
         }
 
-        public bool AggregateVerify(in PublicKey[] pubVec, in Msg[] msgVec)
-        {
-            if (!Msg.AreAllMsgDifferent(msgVec)) {
-                return false;
-            }
-            return AggregateVerifyNoCheck(in this, in pubVec, in msgVec);
-        }
+        public bool AggregateVerify(in PublicKey[] pubVec, in Msg[] msgVec) =>
+            Msg.AreAllMsgDifferent(msgVec) &&
+            AggregateVerifyNoCheck(in this, in pubVec, in msgVec);
     }
 }

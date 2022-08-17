@@ -3,11 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using bls;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace bls.Test
+namespace Planetarium.Cryptography.bls.Test
 {
     public class Sign
     {

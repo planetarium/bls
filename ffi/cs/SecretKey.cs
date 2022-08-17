@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using bls.NativeImport;
+using Planetarium.Cryptography.bls.NativeImport;
 
-namespace bls
+namespace Planetarium.Cryptography.bls
 {
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct SecretKey
@@ -171,7 +171,14 @@ namespace bls
             }
         }
 
-        // secretKey = sum_{i=0}^{msk.Length - 1} msk[i] * id^i
+        /// <summary>
+        /// Generates the shared secret key from a sequence of master secret keys and identifier.
+        /// </summary>
+        /// <param name="msk">A array of master <see cref="SecretKey"/>s.</param>
+        /// <param name="id">An identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        /// <remarks>secretKey = sum_{i=0}^{msk.Length - 1} msk[i] * id^i</remarks>
         public static SecretKey ShareSecretKey(in SecretKey[] msk, in Id id)
         {
             fixed (SecretKey* p = &msk[0])

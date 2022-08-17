@@ -43,7 +43,7 @@ namespace System
 }
 #endif
 
-namespace bls.NativeImport
+namespace Planetarium.Cryptography.bls.NativeImport
 {
     internal static class CurrentFramework
     {

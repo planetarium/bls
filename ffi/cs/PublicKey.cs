@@ -4,15 +4,23 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
-using bls.NativeImport;
+using Planetarium.Cryptography.bls.NativeImport;
 
-namespace bls
+namespace Planetarium.Cryptography.bls
 {
+    /// <summary>
+    /// A public key struct of BLS signature.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct PublicKey
     {
         private fixed ulong v[BLS.PUBLICKEY_UNIT_SIZE];
 
+        /// <summary>
+        /// Serializes the public key to a <see cref="byte"/> array.
+        /// </summary>
+        /// <returns>Returns a <see cref="byte"/> array representation of this public key.</returns>
+        /// <exception cref="ArithmeticException">Thrown if serialization is failed.</exception>
         public byte[] Serialize()
         {
             ulong bufSize = (ulong)Native.Instance.blsGetG1ByteSize() * (BLS.isETH ? 1 : 2);
@@ -26,6 +34,11 @@ namespace bls
             return buf;
         }
 
+        /// <summary>
+        /// Deserializes the public key from a <see cref="byte"/> array.
+        /// </summary>
+        /// <param name="buf">A <see cref="byte"/> array representation of an public key.</param>
+        /// <exception cref="ArithmeticException">Thrown if deserialization is failed.</exception>
         public void Deserialize(byte[] buf)
         {
             if (buf.Length != BLS.PUBLICKEY_SERIALIZE_SIZE)
@@ -46,6 +59,13 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Checks if the public key is equal to another public key.
+        /// </summary>
+        /// <param name="rhs">an <see cref="PublicKey"/> to check.</param>
+        /// <returns>Returns <see langword="true"/> if both are equal, otherwise returns
+        /// <see langword="false"/>.
+        /// </returns>
         public bool IsEqual(in PublicKey rhs)
         {
             fixed (PublicKey* l = &this)
@@ -57,6 +77,12 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Checks if the public key has zero value.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/> if value is zero, otherwise returns
+        /// <see langword="false"/>.
+        /// </returns>
         public bool IsZero()
         {
             fixed (PublicKey* l = &this)
@@ -65,6 +91,11 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Sets an public key with ethereum serialization format.
+        /// </summary>
+        /// <param name="s">a string contains hexadecimal value to set. </param>
+        /// <exception cref="ArgumentException">Thrown if setting attempt is failed.</exception>
         public void SetStr(string s)
         {
             byte[] arr = Encoding.UTF8.GetBytes(s);
@@ -75,6 +106,10 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Gets an public key with ethereum serialization format.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown if getting attempt is failed.</exception>
         public string GetHexStr()
         {
             byte[] arr = new byte[1024];
@@ -89,6 +124,10 @@ namespace bls
             return Encoding.UTF8.GetString(arr);
         }
 
+        /// <summary>
+        /// Aggregates with given public key.
+        /// </summary>
+        /// <param name="rhs">A <see cref="PublicKey"/> to aggregate.</param>
         public void Add(in PublicKey rhs)
         {
             fixed (PublicKey* r = &rhs)
@@ -97,6 +136,10 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Subtracts with given public key.
+        /// </summary>
+        /// <param name="rhs">A <see cref="PublicKey"/> to subtract.</param>
         public void Sub(in PublicKey rhs)
         {
             fixed (PublicKey* r = &rhs)
@@ -105,11 +148,18 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Negates this public key.
+        /// </summary>
         public void Neg()
         {
             Native.Instance.blsPublicKeyNeg(ref this);
         }
 
+        /// <summary>
+        /// Multiplies this public key with given public key.
+        /// </summary>
+        /// <param name="rhs">A public key </param>
         public void Mul(in SecretKey rhs)
         {
             fixed (SecretKey* r = &rhs)
@@ -118,6 +168,13 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Verifies if this public key has signed with given message.
+        /// </summary>
+        /// <param name="sig">A signature.</param>
+        /// <param name="buf">A message used in signing.</param>
+        /// <returns>Returns <see langword="true"/> if given <see cref="Signature"/> is signed with
+        /// public key, otherwise returns <see langword="false"/>.</returns>
         public bool Verify(in Signature sig, byte[] buf)
         {
             fixed (PublicKey* l = &this)
@@ -129,11 +186,23 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Verifies if this public key has signed with given message.
+        /// </summary>
+        /// <param name="sig">A signature.</param>
+        /// <param name="s">A message used in signing.</param>
+        /// <returns>Returns <see langword="true"/> if given <see cref="Signature"/> is signed with
+        /// public key, otherwise returns <see langword="false"/>.</returns>
         public bool Verify(in Signature sig, string s)
         {
             return Verify(sig, Encoding.UTF8.GetBytes(s));
         }
 
+        /// <summary>
+        /// Verifies if given Proof of Possession (PoP) is valid with this public key.
+        /// </summary>
+        /// <param name="pop">A proof of possession signature to verify.</param>
+        /// <returns></returns>
         public bool VerifyPop(in Signature pop)
         {
             fixed (PublicKey* l = &this)
@@ -155,8 +224,8 @@ namespace bls
                     fixed (Id* i = &id)
                     {
                         PublicKey pub;
-                        if (Native.Instance.blsPublicKeyShare(ref pub, p, (ulong)mpk.Length, i) !=
-                            0)
+                        if (Native.Instance.blsPublicKeyShare(
+                                ref pub, p, (ulong)mpk.Length, i) != 0)
                         {
                             throw new ArgumentException("GetPublicKeyForId:" + id);
                         }

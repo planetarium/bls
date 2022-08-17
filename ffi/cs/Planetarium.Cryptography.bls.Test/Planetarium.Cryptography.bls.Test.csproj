@@ -10,11 +10,11 @@
 
         <TargetFramework>net6.0</TargetFramework>
 
-        <RootNamespace>bls.Test</RootNamespace>
-
         <Configurations>Debug;Release</Configurations>
 
         <Platforms>x64</Platforms>
+
+        <RootNamespace>Planetarium.Cryptography.bls.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\bls.csproj" />
+      <ProjectReference Include="..\Planetarium.Cryptography.bls.csproj" />
     </ItemGroup>
 
 </Project>

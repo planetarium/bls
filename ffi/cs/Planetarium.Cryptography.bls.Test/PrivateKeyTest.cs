@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using bls;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace bls.Test
+namespace Planetarium.Cryptography.bls.Test
 {
     public class PrivateKeyTest
     {
