@@ -175,27 +175,18 @@ namespace Planetarium.Cryptography.bls
         /// <param name="buf">A message used in signing.</param>
         /// <returns>Returns <see langword="true"/> if given <see cref="Signature"/> is signed with
         /// public key, otherwise returns <see langword="false"/>.</returns>
-        public bool Verify(in Signature sig, byte[] buf)
+        public bool Verify(in Signature sig, in Msg buf)
         {
             fixed (PublicKey* l = &this)
             {
                 fixed (Signature* s = &sig)
                 {
-                    return Native.Instance.blsVerify(s, l, buf, (ulong)buf.Length) == 1;
+                    fixed (Msg* m = &buf)
+                    {
+                        return Native.Instance.blsVerify(s, l, m, BLS.MSG_SIZE) == 1;
+                    }
                 }
             }
-        }
-
-        /// <summary>
-        /// Verifies if this public key has signed with given message.
-        /// </summary>
-        /// <param name="sig">A signature.</param>
-        /// <param name="s">A message used in signing.</param>
-        /// <returns>Returns <see langword="true"/> if given <see cref="Signature"/> is signed with
-        /// public key, otherwise returns <see langword="false"/>.</returns>
-        public bool Verify(in Signature sig, string s)
-        {
-            return Verify(sig, Encoding.UTF8.GetBytes(s));
         }
 
         /// <summary>

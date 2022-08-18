@@ -146,19 +146,17 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
-        public Signature Sign(byte[] buf)
+        public Signature Sign(in Msg buf)
         {
             fixed (SecretKey* sec = &this)
             {
-                Signature sig;
-                Native.Instance.blsSign(ref sig, sec, buf, (ulong)buf.Length);
-                return sig;
+                fixed (Msg* m = &buf)
+                {
+                    Signature sig;
+                    Native.Instance.blsSign(ref sig, sec, m, BLS.MSG_SIZE);
+                    return sig;
+                }
             }
-        }
-
-        public Signature Sign(string s)
-        {
-            return Sign(Encoding.UTF8.GetBytes(s));
         }
 
         public Signature GetPop()

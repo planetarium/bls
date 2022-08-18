@@ -153,20 +153,20 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
-        public bool FastAggregateVerify(in PublicKey[] pubVec, byte[] msg)
+        public bool FastAggregateVerify(in PublicKey[] pubVec, in Msg msg)
         {
-            unsafe
-            {
-                if (pubVec.Length == 0) {
-                    throw new ArgumentException("pubVec is empty");
-                }
+            if (pubVec.Length == 0) {
+                throw new ArgumentException("pubVec is empty");
+            }
 
-                fixed (Signature* s = &this)
+            fixed (Signature* s = &this)
+            {
+                fixed (PublicKey* p = &pubVec[0])
                 {
-                    fixed(PublicKey* p = &pubVec[0])
+                    fixed (Msg* m = &msg)
                     {
                         return Native.Instance.blsFastAggregateVerify(
-                            s, p, (ulong)pubVec.Length, msg, (ulong)msg.Length) == 1;
+                            s, p, (ulong)pubVec.Length, m, BLS.MSG_SIZE) == 1;
                     }
                 }
             }

@@ -26,12 +26,14 @@ namespace Planetarium.Cryptography.bls.Test
             var publicKey = privateKey.GetPublicKey();
             var message = new byte[] { 0xff, 0xff, 0xff, 0xff };
             var hashedMessage = SHA256.Create().ComputeHash(message);
+            Msg msg;
+            msg.Set(hashedMessage);
 
-            var sign = privateKey.Sign(hashedMessage);
+            var sign = privateKey.Sign(msg);
             var serializedSign = sign.Serialize();
             Assert.NotNull(serializedSign);
 
-            var verify = publicKey.Verify(sign, hashedMessage);
+            var verify = publicKey.Verify(sign, msg);
             Assert.True(verify);
         }
 
@@ -43,7 +45,9 @@ namespace Planetarium.Cryptography.bls.Test
 
             var message = new byte[] { 0xff, 0xff, 0xff, 0xff };
             var hashedMessage = SHA256.Create().ComputeHash(message);
-            var sign = privateKey.Sign(hashedMessage);
+            Msg msg;
+            msg.Set(hashedMessage);
+            var sign = privateKey.Sign(msg);
             var serializedSign = sign.Serialize();
 
             Signature testSign;
@@ -202,7 +206,10 @@ namespace Planetarium.Cryptography.bls.Test
                     var expectedSign = testYaml.Output.ToBytes();
                     secretKey.Deserialize(privateKey);
 
-                    var sign = secretKey.Sign(message);
+                    Msg msg;
+                    msg.Set(message);
+
+                    var sign = secretKey.Sign(msg);
                     var serializedSign = sign.Serialize();
 
                     _testOutputHelper.WriteLine("Private key: \n" + BitConverter.ToString(privateKey));

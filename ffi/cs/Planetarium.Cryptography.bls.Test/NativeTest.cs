@@ -102,10 +102,15 @@ namespace Planetarium.Cryptography.bls.Test
             PublicKey pub = sec.GetPublicKey();
 
             string m = "abc";
-            Signature sig = sec.Sign(m);
+            var hashedMessage = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(m));
+            Msg msg;
+            msg.Set(hashedMessage);
+            Signature sig = sec.Sign(msg);
 
-            Assert.True(pub.Verify(sig, m));
-            Assert.False(pub.Verify(sig, m + "a"));
+            Assert.True(pub.Verify(sig, msg));
+            hashedMessage[0] = 0x01;
+            msg.Set(hashedMessage);
+            Assert.False(pub.Verify(sig, msg));
 
             Signature sig2;
             byte[] buf = sig.Serialize();
@@ -158,11 +163,14 @@ namespace Planetarium.Cryptography.bls.Test
             }
 
             string m = "doremi";
+            var hashedMessage = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(m));
+            Msg msg;
+            msg.Set(hashedMessage);
             Signature signature;
             for (int i = 0; i < n; i++)
             {
-                signature = secs[i].Sign(m);
-                Assert.True(pubs[i].Verify(signature, m));
+                signature = secs[i].Sign(msg);
+                Assert.True(pubs[i].Verify(signature, msg));
             }
 
             int[] idxTbl = { 0, 2, 5, 8, 10 };
@@ -179,14 +187,14 @@ namespace Planetarium.Cryptography.bls.Test
                 subIds[i] = ids[idx];
                 subSecs[i] = secs[idx];
                 subPubs[i] = pubs[idx];
-                subSigns[i] = secs[idx].Sign(m);
+                subSigns[i] = secs[idx].Sign(msg);
             }
 
             SecretKey sec = SecretKey.RecoverSecretKey(subSecs, subIds);
             PublicKey pub = PublicKey.RecoverPublicKey(subPubs, subIds);
             Assert.True(pub.IsEqual(sec.GetPublicKey()));
             signature = Signature.RecoverSign(subSigns, subIds);
-            Assert.True(pub.Verify(signature, m));
+            Assert.True(pub.Verify(signature, msg));
         }
 
         [Fact]
@@ -194,6 +202,10 @@ namespace Planetarium.Cryptography.bls.Test
         {
             const int n = 10;
             const string m = "abc";
+            var hashedMessage =
+                SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(m));
+            Msg msg;
+            msg.Set(hashedMessage);
 
             SecretKey[] secVec = new SecretKey[n];
             PublicKey[] pubVec = new PublicKey[n];
@@ -205,7 +217,7 @@ namespace Planetarium.Cryptography.bls.Test
                 secVec[i].SetByCSPRNG();
                 pubVec[i] = secVec[i].GetPublicKey();
                 popVec[i] = secVec[i].GetPop();
-                sigVec[i] = secVec[i].Sign(m);
+                sigVec[i] = secVec[i].Sign(msg);
             }
 
             SecretKey secAgg;
@@ -220,8 +232,8 @@ namespace Planetarium.Cryptography.bls.Test
                 sigAgg.Add(sigVec[i]);
             }
 
-            Assert.True(secAgg.Sign(m).IsEqual(sigAgg));
-            Assert.True(pubAgg.Verify(sigAgg, m));
+            Assert.True(secAgg.Sign(msg).IsEqual(sigAgg));
+            Assert.True(pubAgg.Verify(sigAgg, msg));
 
             // sub
             secAgg = secVec[0];
@@ -245,6 +257,10 @@ namespace Planetarium.Cryptography.bls.Test
         {
             int n = 10;
             const string m = "abc";
+            var hashedMessage = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(m));
+            Msg msg;
+            msg.Set(hashedMessage);
+
             SecretKey[] secVec = new SecretKey[n];
             PublicKey[] pubVec = new PublicKey[n];
             Signature[] sigVec = new Signature[n];
@@ -254,13 +270,13 @@ namespace Planetarium.Cryptography.bls.Test
             {
                 secVec[i].SetByCSPRNG();
                 pubVec[i] = secVec[i].GetPublicKey();
-                sigVec[i] = secVec[i].Sign(m);
+                sigVec[i] = secVec[i].Sign(msg);
                 frVec[i].SetByCSPRNG();
             }
 
             PublicKey aggPub = PublicKey.MulVec(pubVec, frVec);
             Signature aggSig = Signature.MulVec(sigVec, frVec);
-            Assert.True(aggPub.Verify(aggSig, m));
+            Assert.True(aggPub.Verify(aggSig, msg));
         }
 
         [Fact]
@@ -320,8 +336,10 @@ namespace Planetarium.Cryptography.bls.Test
                     var msg = v.msg.ToBytes();
 
                     Signature sig = new Signature();
+                    Msg nativeMsg;
+                    nativeMsg.Set(msg);
                     sig.Deserialize(v.sig.ToBytes());
-                    result = sig.FastAggregateVerify(pubVec, msg);
+                    result = sig.FastAggregateVerify(pubVec, nativeMsg);
                 }
                 catch (Exception) {
                     // pass through

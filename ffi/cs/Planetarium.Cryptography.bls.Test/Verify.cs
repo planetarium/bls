@@ -228,8 +228,6 @@ namespace Planetarium.Cryptography.bls.Test
                 var expectedResult = bool.Parse(testYaml.Output);
 
                 Signature sign;
-                Msg msg;
-                msg.Set(message);
 
                 if (file.Contains("fast_aggregate_verify_tampered_signature"))
                 {
@@ -239,8 +237,10 @@ namespace Planetarium.Cryptography.bls.Test
                 }
                 else
                 {
+                    Msg msg;
+                    msg.Set(message);
                     sign.Deserialize(signature);
-                    result = sign.FastAggregateVerify(publicKeys, message);
+                    result = sign.FastAggregateVerify(publicKeys, msg);
                 }
 
                 _testOutputHelper.WriteLine("Public key: ");
@@ -289,10 +289,12 @@ namespace Planetarium.Cryptography.bls.Test
                 }
                 else
                 {
+                    Msg msg;
+                    msg.Set(message);
                     sign.Deserialize(signature);
 
                     Assert.Throws<ArgumentException>(
-                        () => sign.FastAggregateVerify(publicKeys, message));
+                        () => sign.FastAggregateVerify(publicKeys, msg));
                 }
 
                 _testOutputHelper.WriteLine("Public key: ");
@@ -340,8 +342,10 @@ namespace Planetarium.Cryptography.bls.Test
                 }
                 else
                 {
+                    Msg msg;
+                    msg.Set(message);
                     sign.Deserialize(signature);
-                    result = pk.Verify(sign, message);
+                    result = pk.Verify(sign, msg);
                 }
 
                 _testOutputHelper.WriteLine("Public key: \n" + BitConverter.ToString(publicKey));
