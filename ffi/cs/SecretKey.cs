@@ -30,10 +30,6 @@ namespace Planetarium.Cryptography.bls
             {
                 throw new ArgumentException("buf size is not secret key size.", nameof(buf));
             }
-            if (buf.SequenceEqual(new byte[BLS.SECRETKEY_SERIALIZE_SIZE]))
-            {
-                throw new ArgumentException("buf is zero", nameof(buf));
-            }
 
             ulong bufSize = (ulong)buf.Length;
             ulong n = Native.Instance.blsSecretKeyDeserialize(ref this, buf, bufSize);

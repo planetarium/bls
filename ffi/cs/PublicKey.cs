@@ -46,10 +46,6 @@ namespace Planetarium.Cryptography.bls
                 throw new ArgumentException(
                     "buf length is not public key size.", nameof(buf));
             }
-            if (buf.SequenceEqual(new byte[BLS.PUBLICKEY_SERIALIZE_SIZE]))
-            {
-                throw new ArgumentException("buf is zero", nameof(buf));
-            }
 
             ulong bufSize = (ulong)buf.Length;
             ulong n = Native.Instance.blsPublicKeyDeserialize(ref this, buf, bufSize);

@@ -51,7 +51,8 @@ namespace Planetarium.Cryptography.bls.Test
 
             sec2 = new SecretKey();
             byte[] buf = sec.Serialize();
-            Assert.Throws<ArgumentException>(()=> sec2.Deserialize(buf));
+            sec2.Deserialize(buf);
+            Assert.True(sec2.IsZero());
 
             sec2 = new SecretKey();
             sec.SetHexStr("0x11");

@@ -26,15 +26,6 @@ namespace Planetarium.Cryptography.bls.Test
         }
 
         [Fact]
-        public void ZeroValuePrivateKey()
-        {
-            var privateKey = new byte[BLS.SECRETKEY_SERIALIZE_SIZE];
-            SecretKey sk;
-
-            Assert.Throws<ArgumentException>(() => sk.Deserialize(privateKey));
-        }
-
-        [Fact]
         public void LoadTestSuitePrivateKeys()
         {
             var files = Directory.GetFiles(

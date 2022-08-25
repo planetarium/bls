@@ -32,10 +32,6 @@ namespace Planetarium.Cryptography.bls
                 throw new ArgumentException(
                     "buf length is not signature size.", nameof(buf));
             }
-            if (buf.SequenceEqual(new byte[BLS.SIGNATURE_SERIALIZE_SIZE]))
-            {
-                throw new ArgumentException("buf is zero", nameof(buf));
-            }
 
             ulong bufSize = (ulong)buf.Length;
             ulong n = Native.Instance.blsSignatureDeserialize(ref this, buf, bufSize);

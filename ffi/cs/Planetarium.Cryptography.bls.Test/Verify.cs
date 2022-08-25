@@ -111,7 +111,7 @@ namespace Planetarium.Cryptography.bls.Test
 
                 if (signature.SequenceEqual(new byte[BLS.SIGNATURE_SERIALIZE_SIZE]))
                 {
-                    Assert.Throws<ArgumentException>(
+                    Assert.Throws<ArithmeticException>(
                         () => sign.Deserialize(signature));
                 }
 
@@ -284,7 +284,7 @@ namespace Planetarium.Cryptography.bls.Test
                 Signature sign;
                 if (signature.SequenceEqual(new byte[BLS.SIGNATURE_SERIALIZE_SIZE]))
                 {
-                    Assert.Throws<ArgumentException>(
+                    Assert.Throws<ArithmeticException>(
                         () => sign.Deserialize(signature));
                 }
                 else
