@@ -10,9 +10,9 @@
 
 using System;
 using System.Linq;
-using Planetarium.Cryptography.bls.NativeImport;
+using Planetarium.Cryptography.BLS12_381.NativeImport;
 
-namespace Planetarium.Cryptography.bls
+namespace Planetarium.Cryptography.BLS12_381
 {
     /// <summary>
     /// The constants and static field class for BLS library.

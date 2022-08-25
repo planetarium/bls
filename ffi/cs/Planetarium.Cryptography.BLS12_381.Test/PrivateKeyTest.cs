@@ -4,7 +4,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Planetarium.Cryptography.bls.Test
+namespace Planetarium.Cryptography.BLS12_381.Test
 {
     public class PrivateKeyTest
     {
@@ -29,8 +29,8 @@ namespace Planetarium.Cryptography.bls.Test
         public void LoadTestSuitePrivateKeys()
         {
             var files = Directory.GetFiles(
-                "../../../../tests/sign/").Except(
-                new[] { "../../../../tests/sign/sign_case_zero_privkey.yaml" });
+                "../../../tests/sign/").Except(
+                new[] { "../../../tests/sign/sign_case_zero_privkey.yaml" });
 
             foreach (var file in files)
             {

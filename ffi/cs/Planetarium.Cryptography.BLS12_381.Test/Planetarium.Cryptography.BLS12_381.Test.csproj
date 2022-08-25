@@ -10,11 +10,11 @@
 
         <TargetFramework>net6.0</TargetFramework>
 
-        <Configurations>Debug;Release</Configurations>
+        <Configurations>Release;Debug</Configurations>
 
-        <Platforms>x64;ARM64</Platforms>
+        <Platforms>AnyCPU</Platforms>
 
-        <RootNamespace>Planetarium.Cryptography.bls.Test</RootNamespace>
+        <RootNamespace>Planetarium.Cryptography.BLS12_381.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Planetarium.Cryptography.bls.csproj" />
+      <ProjectReference Include="..\Planetarium.Cryptography.BLS12_381.csproj" />
     </ItemGroup>
 
 </Project>

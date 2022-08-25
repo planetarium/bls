@@ -6,7 +6,7 @@ using System.Text;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Planetarium.Cryptography.bls.Test
+namespace Planetarium.Cryptography.BLS12_381.Test
 {
     public class Sign
     {
@@ -61,7 +61,7 @@ namespace Planetarium.Cryptography.bls.Test
         public void DeserializeTest()
         {
             var files = Directory.GetFiles(
-                "../../../../tests/deserialization_G2/", "deserialization_succeeds_*");
+                "../../../tests/deserialization_G2/", "deserialization_succeeds_*");
 
             foreach (var file in files)
             {
@@ -87,7 +87,7 @@ namespace Planetarium.Cryptography.bls.Test
         public void DeserializeFailingTest()
         {
             var files = Directory.GetFiles(
-                "../../../../tests/deserialization_G2/", "deserialization_fails_*");
+                "../../../tests/deserialization_G2/", "deserialization_fails_*");
 
             foreach (var file in files)
             {
@@ -121,7 +121,7 @@ namespace Planetarium.Cryptography.bls.Test
         [Fact]
         public void AggregateSignTest()
         {
-            var files = Directory.GetFiles("../../../../tests/aggregate/");
+            var files = Directory.GetFiles("../../../tests/aggregate/");
 
 
             foreach (var file in files)
@@ -180,8 +180,8 @@ namespace Planetarium.Cryptography.bls.Test
         [Fact]
         public void SignTest()
         {
-            var files = Directory.GetFiles("../../../../tests/sign/")
-                .Except(new string[] { "../../../../tests/sign/sign_case_zero_privkey.yaml" });
+            var files = Directory.GetFiles("../../../tests/sign/")
+                .Except(new string[] { "../../../tests/sign/sign_case_zero_privkey.yaml" });
 
             foreach (var file in files)
             {
@@ -222,7 +222,7 @@ namespace Planetarium.Cryptography.bls.Test
         public void ZeroPrivateKeySignTest()
         {
             var files = Directory.GetFiles(
-                "../../../../tests/sign/",
+                "../../../tests/sign/",
                 "sign_case_zero_privkey.yaml");
 
             foreach (var file in files)

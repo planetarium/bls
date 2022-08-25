@@ -11,7 +11,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
-namespace Planetarium.Cryptography.bls.NativeImport
+namespace Planetarium.Cryptography.BLS12_381.NativeImport
 {
     public static class Auto
     {
@@ -504,7 +504,7 @@ namespace Planetarium.Cryptography.bls.NativeImport
             }
 
             throw new NativeLoadException(
-                "Unable to locate Planetarium.Cryptography.bls native library \nSearched:\n" +
+                "Unable to locate Planetarium.Cryptography.BLS12_381 native library \nSearched:\n" +
                 string.Join(
                     "\n",
                     search.Select(s => $"{s.Path}: " +

@@ -4,7 +4,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Planetarium.Cryptography.bls.Test
+namespace Planetarium.Cryptography.BLS12_381.Test
 {
     public class Verify
     {
@@ -18,7 +18,7 @@ namespace Planetarium.Cryptography.bls.Test
         [Fact]
         public void MultiVerifyTest()
         {
-            var files = Directory.GetFiles("../../../../tests/batch_verify/");
+            var files = Directory.GetFiles("../../../tests/batch_verify/");
             _testOutputHelper.WriteLine("IsLittleEndian : " + BitConverter.IsLittleEndian);
 
             foreach (var file in files)
@@ -79,7 +79,7 @@ namespace Planetarium.Cryptography.bls.Test
         [Fact]
         public void AggregateVerifyNAPublicKeyTest()
         {
-            var files = Directory.GetFiles("../../../../tests/aggregate_verify/", "*_na_pubkeys_*");
+            var files = Directory.GetFiles("../../../tests/aggregate_verify/", "*_na_pubkeys_*");
             _testOutputHelper.WriteLine("IsLittleEndian : " + BitConverter.IsLittleEndian);
 
             foreach (var file in files)
@@ -137,7 +137,7 @@ namespace Planetarium.Cryptography.bls.Test
         [Fact]
         public void AggregateVerifyTest()
         {
-            var files = Directory.GetFiles("../../../../tests/aggregate_verify/");
+            var files = Directory.GetFiles("../../../tests/aggregate_verify/");
             _testOutputHelper.WriteLine("IsLittleEndian : " + BitConverter.IsLittleEndian);
 
             files = files.Where(x => !x.Contains("na_pubkeys")).ToArray();
@@ -202,7 +202,7 @@ namespace Planetarium.Cryptography.bls.Test
         [Fact]
         public void FastAggregateVerifyTest()
         {
-            var files = Directory.GetFiles("../../../../tests/fast_aggregate_verify/");
+            var files = Directory.GetFiles("../../../tests/fast_aggregate_verify/");
             _testOutputHelper.WriteLine("IsLittleEndian : " + BitConverter.IsLittleEndian);
 
             files = files.Where(x => !x.Contains("na_pubkeys")).ToArray();
@@ -259,7 +259,7 @@ namespace Planetarium.Cryptography.bls.Test
         [Fact]
         public void FastAggregateVerifyNAPublicKeyTest()
         {
-            var files = Directory.GetFiles("../../../../tests/fast_aggregate_verify/", "*_na_pubkeys_*");
+            var files = Directory.GetFiles("../../../tests/fast_aggregate_verify/", "*_na_pubkeys_*");
             _testOutputHelper.WriteLine("IsLittleEndian : " + BitConverter.IsLittleEndian);
 
             foreach (var file in files)
@@ -312,7 +312,7 @@ namespace Planetarium.Cryptography.bls.Test
         [Fact]
         public void VerifyTest()
         {
-            var files = Directory.GetFiles("../../../../tests/verify/");
+            var files = Directory.GetFiles("../../../tests/verify/");
 
 
             foreach (var file in files)

@@ -3,7 +3,7 @@ using System.IO;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Planetarium.Cryptography.bls.Test
+namespace Planetarium.Cryptography.BLS12_381.Test
 {
     public sealed class YAMLTestBase
     {
