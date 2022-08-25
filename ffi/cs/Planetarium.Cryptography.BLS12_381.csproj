@@ -21,8 +21,8 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>..\..\bin\</OutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Configurations>Release;Debug</Configurations>
-    <Platforms>x64;ARM64</Platforms>
+    <Configurations>Debug;Release</Configurations>
+    <Platforms>AnyCPU</Platforms>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageVersion>0.1.10.1</PackageVersion>
     <Title>Planetarium.Cryptography.BLS12_381</Title>

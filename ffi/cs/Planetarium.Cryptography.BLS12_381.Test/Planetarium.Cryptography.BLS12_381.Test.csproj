@@ -10,9 +10,9 @@
 
         <TargetFramework>net6.0</TargetFramework>
 
-        <Configurations>Debug;Release</Configurations>
+        <Configurations>Release;Debug</Configurations>
 
-        <Platforms>x64;ARM64</Platforms>
+        <Platforms>AnyCPU</Platforms>
 
         <RootNamespace>Planetarium.Cryptography.BLS12_381.Test</RootNamespace>
     </PropertyGroup>

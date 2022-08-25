@@ -29,8 +29,8 @@ namespace Planetarium.Cryptography.BLS12_381.Test
         public void LoadTestSuitePrivateKeys()
         {
             var files = Directory.GetFiles(
-                "../../../../tests/sign/").Except(
-                new[] { "../../../../tests/sign/sign_case_zero_privkey.yaml" });
+                "../../../tests/sign/").Except(
+                new[] { "../../../tests/sign/sign_case_zero_privkey.yaml" });
 
             foreach (var file in files)
             {

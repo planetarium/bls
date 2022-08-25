@@ -31,7 +31,7 @@ namespace Planetarium.Cryptography.BLS12_381.Test
         public void DeserializeTest()
         {
             var files = Directory.GetFiles(
-                "../../../../tests/deserialization_G1/", "deserialization_succeeds_*");
+                "../../../tests/deserialization_G1/", "deserialization_succeeds_*");
 
             foreach (var file in files)
             {
@@ -57,7 +57,7 @@ namespace Planetarium.Cryptography.BLS12_381.Test
         public void DeserializeFailing()
         {
             var files = Directory.GetFiles(
-                "../../../../tests/deserialization_G1/", "deserialization_fails_*");
+                "../../../tests/deserialization_G1/", "deserialization_fails_*");
 
             foreach (var file in files)
             {
