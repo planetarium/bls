@@ -1,7 +1,5 @@
 using System;
-using System.Globalization;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Planetarium.Cryptography.bls.NativeImport;
@@ -88,7 +86,7 @@ namespace Planetarium.Cryptography.bls
         }
 
         /// <summary>
-        /// Sets an public key with ethereum serialization format.
+        /// Sets a public key with ethereum serialization format.
         /// </summary>
         /// <param name="s">a string contains hexadecimal value to set. </param>
         /// <exception cref="ArgumentException">Thrown if setting attempt is failed.</exception>
@@ -103,7 +101,7 @@ namespace Planetarium.Cryptography.bls
         }
 
         /// <summary>
-        /// Gets an public key with ethereum serialization format.
+        /// Gets a public key with ethereum serialization format.
         /// </summary>
         /// <exception cref="ArgumentException">Thrown if getting attempt is failed.</exception>
         public string GetHexStr()
@@ -121,7 +119,7 @@ namespace Planetarium.Cryptography.bls
         }
 
         /// <summary>
-        /// Aggregates with given public key.
+        /// Adds given public key.
         /// </summary>
         /// <param name="rhs">A <see cref="PublicKey"/> to aggregate.</param>
         public void Add(in PublicKey rhs)
@@ -153,9 +151,9 @@ namespace Planetarium.Cryptography.bls
         }
 
         /// <summary>
-        /// Multiplies this public key with given public key.
+        /// Multiplies this public key to a Fr.
         /// </summary>
-        /// <param name="rhs">A public key </param>
+        /// <param name="rhs">A Fr value.</param>
         public void Mul(in SecretKey rhs)
         {
             fixed (SecretKey* r = &rhs)
@@ -201,66 +199,79 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
-        // publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i
+        /// <summary>
+        /// Generates the shared public key from a sequence of master public keys mpk and Id.
+        /// </summary>
+        /// <param name="mpk">the master public keys.</param>
+        /// <param name="id">the identifier value.</param>
+        /// <returns>Returns the shared public key with given value.</returns>
+        /// <exception cref="ArgumentException">Thrown if the generation has been failed.
+        /// </exception>
+        /// <remarks>publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i</remarks>
         public static PublicKey SharePublicKey(in PublicKey[] mpk, in Id id)
         {
-            unsafe
+            fixed (PublicKey* p = &mpk[0])
             {
-                fixed (PublicKey* p = &mpk[0])
+                fixed (Id* i = &id)
                 {
-                    fixed (Id* i = &id)
+                    PublicKey pub;
+                    if (Native.Instance.blsPublicKeyShare(
+                            ref pub, p, (ulong)mpk.Length, i) != 0)
                     {
-                        PublicKey pub;
-                        if (Native.Instance.blsPublicKeyShare(
-                                ref pub, p, (ulong)mpk.Length, i) != 0)
-                        {
-                            throw new ArgumentException("GetPublicKeyForId:" + id);
-                        }
-
-                        return pub;
+                        throw new ArgumentException("GetPublicKeyForId:" + id);
                     }
+
+                    return pub;
                 }
             }
         }
 
+        /// <summary>
+        /// Recovers the public key from a sequence of public keys pubVec and idVec. Each
+        /// pair should be placed in same index.
+        /// </summary>
+        /// <param name="pubVec">A public keys.</param>
+        /// <param name="idVec">A identifiers.</param>
+        /// <returns>Returns the recovered public key.</returns>
+        /// <exception cref="ArgumentException">Thrown if the recovering has been failed.
+        /// </exception>
         public static PublicKey RecoverPublicKey(in PublicKey[] pubVec, in Id[] idVec)
         {
-            unsafe
+            fixed (PublicKey* p = &pubVec[0])
             {
-                fixed (PublicKey* p = &pubVec[0])
+                fixed (Id* i = &idVec[0])
                 {
-                    fixed (Id* i = &idVec[0])
+                    PublicKey pub;
+                    if (Native.Instance.blsPublicKeyRecover(
+                            ref pub, p, i, (ulong)pubVec.Length) != 0)
                     {
-                        PublicKey pub;
-                        if (Native.Instance.blsPublicKeyRecover(
-                                ref pub, p, i, (ulong)pubVec.Length) != 0)
-                        {
-                            throw new ArgumentException("Recover");
-                        }
-
-                        return pub;
+                        throw new ArgumentException("Recover");
                     }
+
+                    return pub;
                 }
             }
         }
 
+        /// <summary>
+        /// Multiplies the public keys to Frs.
+        /// </summary>
+        /// <param name="pubVec">A public keys.</param>
+        /// <param name="secVec">A Fr values.</param>
         public static PublicKey MulVec(in PublicKey[] pubVec, in SecretKey[] secVec)
         {
-            unsafe
+            if (pubVec.Length != secVec.Length) {
+                throw new ArithmeticException("PublicKey.MulVec");
+            }
+
+            fixed (PublicKey* p = &pubVec[0])
             {
-                if (pubVec.Length != secVec.Length) {
-                    throw new ArithmeticException("PublicKey.MulVec");
-                }
-
-                fixed (PublicKey* p = &pubVec[0])
+                fixed (SecretKey* s = &secVec[0])
                 {
-                    fixed (SecretKey* s = &secVec[0])
-                    {
-                        PublicKey pub;
-                        Native.Instance.blsPublicKeyMulVec(ref pub, p, s, (ulong)pubVec.Length);
+                    PublicKey pub;
+                    Native.Instance.blsPublicKeyMulVec(ref pub, p, s, (ulong)pubVec.Length);
 
-                        return pub;
-                    }
+                    return pub;
                 }
             }
         }

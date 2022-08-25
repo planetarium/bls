@@ -6,11 +6,19 @@ using Planetarium.Cryptography.bls.NativeImport;
 
 namespace Planetarium.Cryptography.bls
 {
+    /// <summary>
+    /// A Signature struct of BLS signature.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct Signature
     {
         private fixed ulong v[BLS.SIGNATURE_UNIT_SIZE];
 
+        /// <summary>
+        /// Serializes the Signature to a <see cref="byte"/> array.
+        /// </summary>
+        /// <returns>Returns a <see cref="byte"/> array representation of this Signature.</returns>
+        /// <exception cref="ArithmeticException">Thrown if serialization is failed.</exception>
         public byte[] Serialize()
         {
             ulong bufSize = (ulong)Native.Instance.blsGetG1ByteSize() * (BLS.isETH ? 2 : 1);
@@ -24,6 +32,11 @@ namespace Planetarium.Cryptography.bls
             return buf;
         }
 
+        /// <summary>
+        /// Deserializes the Signature from a <see cref="byte"/> array.
+        /// </summary>
+        /// <param name="buf">A <see cref="byte"/> array representation of an Signature.</param>
+        /// <exception cref="ArithmeticException">Thrown if deserialization is failed.</exception>
         public void Deserialize(byte[] buf)
         {
 
@@ -41,6 +54,13 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
+        /// <summary>
+        /// Checks if the public key is equal to another signature.
+        /// </summary>
+        /// <param name="rhs">an <see cref="Signature"/> to check.</param>
+        /// <returns>Returns <see langword="true"/> if both are equal, otherwise returns
+        /// <see langword="false"/>.
+        /// </returns>
         public bool IsEqual(in Signature rhs)
         {
             fixed (Signature* l = &this)
@@ -52,6 +72,12 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
+        /// <summary>
+        /// Checks if the signature has zero value.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/> if value is zero, otherwise returns
+        /// <see langword="false"/>.
+        /// </returns>
         public bool IsZero()
         {
             fixed (Signature* l = &this)
@@ -60,6 +86,11 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
+        /// <summary>
+        /// Sets a signature with ethereum serialization format.
+        /// </summary>
+        /// <param name="s">a string contains hexadecimal value to set. </param>
+        /// <exception cref="ArgumentException">Thrown if setting attempt is failed.</exception>
         public void SetStr(string s)
         {
             byte[] arr = Encoding.UTF8.GetBytes(s);
@@ -70,6 +101,10 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
+        /// <summary>
+        /// Gets a signature with ethereum serialization format.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown if getting attempt is failed.</exception>
         public string GetHexStr()
         {
             byte[] arr = new byte[1024];
@@ -86,6 +121,10 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
+        /// <summary>
+        /// Adds given signature.
+        /// </summary>
+        /// <param name="rhs">A <see cref="Signature"/> to aggregate.</param>
         public void Add(in Signature rhs)
         {
             fixed (Signature* r = &rhs)
@@ -94,6 +133,10 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
+        /// <summary>
+        /// Subtracts with given signature.
+        /// </summary>
+        /// <param name="rhs">A <see cref="Signature"/> to subtract.</param>
         public void Sub(in Signature rhs)
         {
             fixed (Signature* r = &rhs)
@@ -102,11 +145,18 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
+        /// <summary>
+        /// Negates this signature.
+        /// </summary>
         public void Neg()
         {
             Native.Instance.blsSignatureNeg(ref this);
         }
 
+        /// <summary>
+        /// Multiplies this signature to a Fr.
+        /// </summary>
+        /// <param name="rhs">A Fr value.</param>
         public void Mul(in SecretKey rhs)
         {
             fixed (SecretKey* r = &rhs)
@@ -133,6 +183,11 @@ namespace Planetarium.Cryptography.bls
             }
         }
 
+        /// <summary>
+        /// Multiplies the signatures to Frs.
+        /// </summary>
+        /// <param name="sigVec">A signatures.</param>
+        /// <param name="secVec">A Fr values.</param>
         public static Signature MulVec(in Signature[] sigVec, in SecretKey[] secVec)
         {
             if (sigVec.Length != secVec.Length) {
