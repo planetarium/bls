@@ -2,15 +2,23 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using bls.NativeImport;
+using Planetarium.Cryptography.bls.NativeImport;
 
-namespace bls
+namespace Planetarium.Cryptography.bls
 {
+    /// <summary>
+    /// A Signature struct of BLS signature.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct Signature
     {
         private fixed ulong v[BLS.SIGNATURE_UNIT_SIZE];
 
+        /// <summary>
+        /// Serializes the Signature to a <see cref="byte"/> array.
+        /// </summary>
+        /// <returns>Returns a <see cref="byte"/> array representation of this Signature.</returns>
+        /// <exception cref="ArithmeticException">Thrown if serialization is failed.</exception>
         public byte[] Serialize()
         {
             ulong bufSize = (ulong)Native.Instance.blsGetG1ByteSize() * (BLS.isETH ? 2 : 1);
@@ -24,6 +32,11 @@ namespace bls
             return buf;
         }
 
+        /// <summary>
+        /// Deserializes the Signature from a <see cref="byte"/> array.
+        /// </summary>
+        /// <param name="buf">A <see cref="byte"/> array representation of an Signature.</param>
+        /// <exception cref="ArithmeticException">Thrown if deserialization is failed.</exception>
         public void Deserialize(byte[] buf)
         {
 
@@ -31,10 +44,6 @@ namespace bls
             {
                 throw new ArgumentException(
                     "buf length is not signature size.", nameof(buf));
-            }
-            if (buf.SequenceEqual(new byte[BLS.SIGNATURE_SERIALIZE_SIZE]))
-            {
-                throw new ArgumentException("buf is zero", nameof(buf));
             }
 
             ulong bufSize = (ulong)buf.Length;
@@ -45,6 +54,13 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Checks if the public key is equal to another signature.
+        /// </summary>
+        /// <param name="rhs">an <see cref="Signature"/> to check.</param>
+        /// <returns>Returns <see langword="true"/> if both are equal, otherwise returns
+        /// <see langword="false"/>.
+        /// </returns>
         public bool IsEqual(in Signature rhs)
         {
             fixed (Signature* l = &this)
@@ -56,6 +72,12 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Checks if the signature has zero value.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/> if value is zero, otherwise returns
+        /// <see langword="false"/>.
+        /// </returns>
         public bool IsZero()
         {
             fixed (Signature* l = &this)
@@ -64,6 +86,11 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Sets a signature with ethereum serialization format.
+        /// </summary>
+        /// <param name="s">a string contains hexadecimal value to set. </param>
+        /// <exception cref="ArgumentException">Thrown if setting attempt is failed.</exception>
         public void SetStr(string s)
         {
             byte[] arr = Encoding.UTF8.GetBytes(s);
@@ -74,6 +101,10 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Gets a signature with ethereum serialization format.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown if getting attempt is failed.</exception>
         public string GetHexStr()
         {
             byte[] arr = new byte[1024];
@@ -90,6 +121,10 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Adds given signature.
+        /// </summary>
+        /// <param name="rhs">A <see cref="Signature"/> to aggregate.</param>
         public void Add(in Signature rhs)
         {
             fixed (Signature* r = &rhs)
@@ -98,6 +133,10 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Subtracts with given signature.
+        /// </summary>
+        /// <param name="rhs">A <see cref="Signature"/> to subtract.</param>
         public void Sub(in Signature rhs)
         {
             fixed (Signature* r = &rhs)
@@ -106,11 +145,18 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Negates this signature.
+        /// </summary>
         public void Neg()
         {
             Native.Instance.blsSignatureNeg(ref this);
         }
 
+        /// <summary>
+        /// Multiplies this signature to a Fr.
+        /// </summary>
+        /// <param name="rhs">A Fr value.</param>
         public void Mul(in SecretKey rhs)
         {
             fixed (SecretKey* r = &rhs)
@@ -137,6 +183,11 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Multiplies the signatures to Frs.
+        /// </summary>
+        /// <param name="sigVec">A signatures.</param>
+        /// <param name="secVec">A Fr values.</param>
         public static Signature MulVec(in Signature[] sigVec, in SecretKey[] secVec)
         {
             if (sigVec.Length != secVec.Length) {
@@ -153,20 +204,20 @@ namespace bls
             }
         }
 
-        public bool FastAggregateVerify(in PublicKey[] pubVec, byte[] msg)
+        public bool FastAggregateVerify(in PublicKey[] pubVec, in Msg msg)
         {
-            unsafe
-            {
-                if (pubVec.Length == 0) {
-                    throw new ArgumentException("pubVec is empty");
-                }
+            if (pubVec.Length == 0) {
+                throw new ArgumentException("pubVec is empty");
+            }
 
-                fixed(Signature* s = &this)
+            fixed (Signature* s = &this)
+            {
+                fixed (PublicKey* p = &pubVec[0])
                 {
-                    fixed(PublicKey* p = &pubVec[0])
+                    fixed (Msg* m = &msg)
                     {
                         return Native.Instance.blsFastAggregateVerify(
-                            s, p, (ulong)pubVec.Length, msg, (ulong)msg.Length) == 1;
+                            s, p, (ulong)pubVec.Length, m, BLS.MSG_SIZE) == 1;
                     }
                 }
             }
@@ -194,12 +245,8 @@ namespace bls
             }
         }
 
-        public bool AggregateVerify(in PublicKey[] pubVec, in Msg[] msgVec)
-        {
-            if (!Msg.AreAllMsgDifferent(msgVec)) {
-                return false;
-            }
-            return AggregateVerifyNoCheck(in this, in pubVec, in msgVec);
-        }
+        public bool AggregateVerify(in PublicKey[] pubVec, in Msg[] msgVec) =>
+            Msg.AreAllMsgDifferent(msgVec) &&
+            AggregateVerifyNoCheck(in this, in pubVec, in msgVec);
     }
 }

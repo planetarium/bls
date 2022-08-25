@@ -2,7 +2,7 @@
 
 // ReSharper disable InconsistentNaming
 
-namespace bls.NativeImport
+namespace Planetarium.Cryptography.bls.NativeImport
 {
     public abstract partial class Native
     {
@@ -85,16 +85,16 @@ namespace bls.NativeImport
             ref Signature sig, Signature* sigVec, Id* idVec, ulong n);
 
         public abstract unsafe void blsSign(
-            ref Signature sig, SecretKey* sec, byte[] buf, ulong size);
+            ref Signature sig, SecretKey* sec, Msg* buf, ulong size);
 
         // return 1 if valid
         public abstract unsafe int blsVerify(
-            Signature* sig, PublicKey* pub, byte[] buf, ulong size);
+            Signature* sig, PublicKey* pub, Msg* buf, ulong size);
         public abstract unsafe int blsVerifyPop(
             Signature* sig, PublicKey* pub);
 
         public abstract unsafe int blsFastAggregateVerify(
-            Signature* sig, PublicKey* pubVec, ulong n, byte[] msg, ulong msgSize);
+            Signature* sig, PublicKey* pubVec, ulong n, Msg* msg, ulong msgSize);
         public abstract unsafe int blsAggregateVerifyNoCheck(
             Signature* sig, PublicKey* pubVec, Msg* msgVec, ulong msgSize, ulong n);
 

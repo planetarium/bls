@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using bls;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace bls.Test
+namespace Planetarium.Cryptography.bls.Test
 {
     public class Verify
     {
@@ -112,7 +111,7 @@ namespace bls.Test
 
                 if (signature.SequenceEqual(new byte[BLS.SIGNATURE_SERIALIZE_SIZE]))
                 {
-                    Assert.Throws<ArgumentException>(
+                    Assert.Throws<ArithmeticException>(
                         () => sign.Deserialize(signature));
                 }
 
@@ -229,8 +228,6 @@ namespace bls.Test
                 var expectedResult = bool.Parse(testYaml.Output);
 
                 Signature sign;
-                Msg msg;
-                msg.Set(message);
 
                 if (file.Contains("fast_aggregate_verify_tampered_signature"))
                 {
@@ -240,8 +237,10 @@ namespace bls.Test
                 }
                 else
                 {
+                    Msg msg;
+                    msg.Set(message);
                     sign.Deserialize(signature);
-                    result = sign.FastAggregateVerify(publicKeys, message);
+                    result = sign.FastAggregateVerify(publicKeys, msg);
                 }
 
                 _testOutputHelper.WriteLine("Public key: ");
@@ -285,15 +284,17 @@ namespace bls.Test
                 Signature sign;
                 if (signature.SequenceEqual(new byte[BLS.SIGNATURE_SERIALIZE_SIZE]))
                 {
-                    Assert.Throws<ArgumentException>(
+                    Assert.Throws<ArithmeticException>(
                         () => sign.Deserialize(signature));
                 }
                 else
                 {
+                    Msg msg;
+                    msg.Set(message);
                     sign.Deserialize(signature);
 
                     Assert.Throws<ArgumentException>(
-                        () => sign.FastAggregateVerify(publicKeys, message));
+                        () => sign.FastAggregateVerify(publicKeys, msg));
                 }
 
                 _testOutputHelper.WriteLine("Public key: ");
@@ -341,8 +342,10 @@ namespace bls.Test
                 }
                 else
                 {
+                    Msg msg;
+                    msg.Set(message);
                     sign.Deserialize(signature);
-                    result = pk.Verify(sign, message);
+                    result = pk.Verify(sign, msg);
                 }
 
                 _testOutputHelper.WriteLine("Public key: \n" + BitConverter.ToString(publicKey));

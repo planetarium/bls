@@ -1,18 +1,24 @@
 using System;
-using System.Globalization;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
-using bls.NativeImport;
+using Planetarium.Cryptography.bls.NativeImport;
 
-namespace bls
+namespace Planetarium.Cryptography.bls
 {
+    /// <summary>
+    /// A public key struct of BLS signature.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct PublicKey
     {
         private fixed ulong v[BLS.PUBLICKEY_UNIT_SIZE];
 
+        /// <summary>
+        /// Serializes the public key to a <see cref="byte"/> array.
+        /// </summary>
+        /// <returns>Returns a <see cref="byte"/> array representation of this public key.</returns>
+        /// <exception cref="ArithmeticException">Thrown if serialization is failed.</exception>
         public byte[] Serialize()
         {
             ulong bufSize = (ulong)Native.Instance.blsGetG1ByteSize() * (BLS.isETH ? 1 : 2);
@@ -26,16 +32,17 @@ namespace bls
             return buf;
         }
 
+        /// <summary>
+        /// Deserializes the public key from a <see cref="byte"/> array.
+        /// </summary>
+        /// <param name="buf">A <see cref="byte"/> array representation of an public key.</param>
+        /// <exception cref="ArithmeticException">Thrown if deserialization is failed.</exception>
         public void Deserialize(byte[] buf)
         {
             if (buf.Length != BLS.PUBLICKEY_SERIALIZE_SIZE)
             {
                 throw new ArgumentException(
                     "buf length is not public key size.", nameof(buf));
-            }
-            if (buf.SequenceEqual(new byte[BLS.PUBLICKEY_SERIALIZE_SIZE]))
-            {
-                throw new ArgumentException("buf is zero", nameof(buf));
             }
 
             ulong bufSize = (ulong)buf.Length;
@@ -46,6 +53,13 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Checks if the public key is equal to another public key.
+        /// </summary>
+        /// <param name="rhs">an <see cref="PublicKey"/> to check.</param>
+        /// <returns>Returns <see langword="true"/> if both are equal, otherwise returns
+        /// <see langword="false"/>.
+        /// </returns>
         public bool IsEqual(in PublicKey rhs)
         {
             fixed (PublicKey* l = &this)
@@ -57,6 +71,12 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Checks if the public key has zero value.
+        /// </summary>
+        /// <returns>Returns <see langword="true"/> if value is zero, otherwise returns
+        /// <see langword="false"/>.
+        /// </returns>
         public bool IsZero()
         {
             fixed (PublicKey* l = &this)
@@ -65,6 +85,11 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Sets a public key with ethereum serialization format.
+        /// </summary>
+        /// <param name="s">a string contains hexadecimal value to set. </param>
+        /// <exception cref="ArgumentException">Thrown if setting attempt is failed.</exception>
         public void SetStr(string s)
         {
             byte[] arr = Encoding.UTF8.GetBytes(s);
@@ -75,6 +100,10 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Gets a public key with ethereum serialization format.
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown if getting attempt is failed.</exception>
         public string GetHexStr()
         {
             byte[] arr = new byte[1024];
@@ -89,6 +118,10 @@ namespace bls
             return Encoding.UTF8.GetString(arr);
         }
 
+        /// <summary>
+        /// Adds given public key.
+        /// </summary>
+        /// <param name="rhs">A <see cref="PublicKey"/> to aggregate.</param>
         public void Add(in PublicKey rhs)
         {
             fixed (PublicKey* r = &rhs)
@@ -97,6 +130,10 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Subtracts with given public key.
+        /// </summary>
+        /// <param name="rhs">A <see cref="PublicKey"/> to subtract.</param>
         public void Sub(in PublicKey rhs)
         {
             fixed (PublicKey* r = &rhs)
@@ -105,11 +142,18 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Negates this public key.
+        /// </summary>
         public void Neg()
         {
             Native.Instance.blsPublicKeyNeg(ref this);
         }
 
+        /// <summary>
+        /// Multiplies this public key to a Fr.
+        /// </summary>
+        /// <param name="rhs">A Fr value.</param>
         public void Mul(in SecretKey rhs)
         {
             fixed (SecretKey* r = &rhs)
@@ -118,22 +162,32 @@ namespace bls
             }
         }
 
-        public bool Verify(in Signature sig, byte[] buf)
+        /// <summary>
+        /// Verifies if this public key has signed with given message.
+        /// </summary>
+        /// <param name="sig">A signature.</param>
+        /// <param name="buf">A message used in signing.</param>
+        /// <returns>Returns <see langword="true"/> if given <see cref="Signature"/> is signed with
+        /// public key, otherwise returns <see langword="false"/>.</returns>
+        public bool Verify(in Signature sig, in Msg buf)
         {
             fixed (PublicKey* l = &this)
             {
                 fixed (Signature* s = &sig)
                 {
-                    return Native.Instance.blsVerify(s, l, buf, (ulong)buf.Length) == 1;
+                    fixed (Msg* m = &buf)
+                    {
+                        return Native.Instance.blsVerify(s, l, m, BLS.MSG_SIZE) == 1;
+                    }
                 }
             }
         }
 
-        public bool Verify(in Signature sig, string s)
-        {
-            return Verify(sig, Encoding.UTF8.GetBytes(s));
-        }
-
+        /// <summary>
+        /// Verifies if given Proof of Possession (PoP) is valid with this public key.
+        /// </summary>
+        /// <param name="pop">A proof of possession signature to verify.</param>
+        /// <returns></returns>
         public bool VerifyPop(in Signature pop)
         {
             fixed (PublicKey* l = &this)
@@ -145,66 +199,79 @@ namespace bls
             }
         }
 
-        // publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i
+        /// <summary>
+        /// Generates the shared public key from a sequence of master public keys mpk and Id.
+        /// </summary>
+        /// <param name="mpk">the master public keys.</param>
+        /// <param name="id">the identifier value.</param>
+        /// <returns>Returns the shared public key with given value.</returns>
+        /// <exception cref="ArgumentException">Thrown if the generation has been failed.
+        /// </exception>
+        /// <remarks>publicKey = sum_{i=0}^{mpk.Length - 1} mpk[i] * id^i</remarks>
         public static PublicKey SharePublicKey(in PublicKey[] mpk, in Id id)
         {
-            unsafe
+            fixed (PublicKey* p = &mpk[0])
             {
-                fixed (PublicKey* p = &mpk[0])
+                fixed (Id* i = &id)
                 {
-                    fixed (Id* i = &id)
+                    PublicKey pub;
+                    if (Native.Instance.blsPublicKeyShare(
+                            ref pub, p, (ulong)mpk.Length, i) != 0)
                     {
-                        PublicKey pub;
-                        if (Native.Instance.blsPublicKeyShare(ref pub, p, (ulong)mpk.Length, i) !=
-                            0)
-                        {
-                            throw new ArgumentException("GetPublicKeyForId:" + id);
-                        }
-
-                        return pub;
+                        throw new ArgumentException("GetPublicKeyForId:" + id);
                     }
+
+                    return pub;
                 }
             }
         }
 
+        /// <summary>
+        /// Recovers the public key from a sequence of public keys pubVec and idVec. Each
+        /// pair should be placed in same index.
+        /// </summary>
+        /// <param name="pubVec">A public keys.</param>
+        /// <param name="idVec">A identifiers.</param>
+        /// <returns>Returns the recovered public key.</returns>
+        /// <exception cref="ArgumentException">Thrown if the recovering has been failed.
+        /// </exception>
         public static PublicKey RecoverPublicKey(in PublicKey[] pubVec, in Id[] idVec)
         {
-            unsafe
+            fixed (PublicKey* p = &pubVec[0])
             {
-                fixed (PublicKey* p = &pubVec[0])
+                fixed (Id* i = &idVec[0])
                 {
-                    fixed (Id* i = &idVec[0])
+                    PublicKey pub;
+                    if (Native.Instance.blsPublicKeyRecover(
+                            ref pub, p, i, (ulong)pubVec.Length) != 0)
                     {
-                        PublicKey pub;
-                        if (Native.Instance.blsPublicKeyRecover(
-                                ref pub, p, i, (ulong)pubVec.Length) != 0)
-                        {
-                            throw new ArgumentException("Recover");
-                        }
-
-                        return pub;
+                        throw new ArgumentException("Recover");
                     }
+
+                    return pub;
                 }
             }
         }
 
+        /// <summary>
+        /// Multiplies the public keys to Frs.
+        /// </summary>
+        /// <param name="pubVec">A public keys.</param>
+        /// <param name="secVec">A Fr values.</param>
         public static PublicKey MulVec(in PublicKey[] pubVec, in SecretKey[] secVec)
         {
-            unsafe
+            if (pubVec.Length != secVec.Length) {
+                throw new ArithmeticException("PublicKey.MulVec");
+            }
+
+            fixed (PublicKey* p = &pubVec[0])
             {
-                if (pubVec.Length != secVec.Length) {
-                    throw new ArithmeticException("PublicKey.MulVec");
-                }
-
-                fixed (PublicKey* p = &pubVec[0])
+                fixed (SecretKey* s = &secVec[0])
                 {
-                    fixed (SecretKey* s = &secVec[0])
-                    {
-                        PublicKey pub;
-                        Native.Instance.blsPublicKeyMulVec(ref pub, p, s, (ulong)pubVec.Length);
+                    PublicKey pub;
+                    Native.Instance.blsPublicKeyMulVec(ref pub, p, s, (ulong)pubVec.Length);
 
-                        return pub;
-                    }
+                    return pub;
                 }
             }
         }

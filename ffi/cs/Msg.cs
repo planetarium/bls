@@ -2,13 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace bls
+namespace Planetarium.Cryptography.bls
 {
+    /// <summary>
+    /// A message struct of BLS signature.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct Msg
     {
         private fixed byte v[BLS.MSG_SIZE];
 
+        /// <summary>
+        /// Sets a message from <see cref="byte"/> array.
+        /// </summary>
+        /// <param name="buf">A message to set.</param>
+        /// <exception cref="ArgumentException">Thrown if given message array size is not
+        /// <see cref="BLS.MSG_SIZE"/>.
+        /// </exception>
         public void Set(byte[] buf)
         {
             if (buf.Length != BLS.MSG_SIZE)
@@ -22,11 +32,17 @@ namespace bls
             }
         }
 
+        /// <summary>
+        /// Gets a <see cref="byte"/> value in given index.
+        /// </summary>
+        /// <param name="i">a index to get.</param>
+        /// <returns>Returns a <see cref="byte"/> value of given index.</returns>
         public byte Get(int i)
         {
             return v[i];
         }
 
+        /// <inheritdoc cref="IEquatable{T}.GetHashCode()"/>
         public override int GetHashCode()
         {
             // FNV-1a 32-bit hash
@@ -40,6 +56,7 @@ namespace bls
             return (int)v;
         }
 
+        /// <inheritdoc cref="IEquatable{T}.Equals(object)"/>
         public override bool Equals(object obj)
         {
             if (!(obj is Msg)) return false;
@@ -52,6 +69,12 @@ namespace bls
             return true;
         }
 
+        /// <summary>
+        /// Checks if any message is equal in message array.
+        /// </summary>
+        /// <param name="msgVec">A <see cref="Msg"/> array to check.</param>
+        /// <returns>Returns <see langword="true"/> if given messages are unique, otherwise returns
+        /// <see langword="false"/>.</returns>
         public static bool AreAllMsgDifferent(in Msg[] msgVec)
         {
             var set = new HashSet<Msg>();
@@ -66,6 +89,10 @@ namespace bls
             return true;
         }
 
+        /// <summary>
+        /// Returns a message as <see cref="byte"/> array.
+        /// </summary>
+        /// <returns></returns>
         public byte[] ToByteArray()
         {
             byte[] buf = new byte[BLS.MSG_SIZE];

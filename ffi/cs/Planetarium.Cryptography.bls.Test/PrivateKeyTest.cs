@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using bls;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace bls.Test
+namespace Planetarium.Cryptography.bls.Test
 {
     public class PrivateKeyTest
     {
@@ -21,15 +20,6 @@ namespace bls.Test
         {
             var privateKey = new byte[BLS.SECRETKEY_SERIALIZE_SIZE - 1];
             privateKey[0] = 1;
-            SecretKey sk;
-
-            Assert.Throws<ArgumentException>(() => sk.Deserialize(privateKey));
-        }
-
-        [Fact]
-        public void ZeroValuePrivateKey()
-        {
-            var privateKey = new byte[BLS.SECRETKEY_SERIALIZE_SIZE];
             SecretKey sk;
 
             Assert.Throws<ArgumentException>(() => sk.Deserialize(privateKey));

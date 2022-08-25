@@ -3,20 +3,20 @@ using System.IO;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace bls.Test
+namespace Planetarium.Cryptography.bls.Test
 {
-    public sealed class YAMLTestBase
+    public sealed class YAMLTestSingleBase
     {
-        public Dictionary<string, string> Input { get; set; }
+        public List<string> Input { get; set; }
 
         public string Output { get; set; }
 
-        public static YAMLTestBase ParseTest(StreamReader yaml)
+        public static YAMLTestSingleBase ParseTest(StreamReader yaml)
         {
             var deserializer = new DeserializerBuilder().
                 WithNamingConvention(CamelCaseNamingConvention.Instance).
                 Build();
-            return deserializer.Deserialize<YAMLTestBase>(yaml);
+            return deserializer.Deserialize<YAMLTestSingleBase>(yaml);
         }
     }
 }
