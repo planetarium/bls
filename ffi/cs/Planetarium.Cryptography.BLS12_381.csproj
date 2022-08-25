@@ -25,7 +25,7 @@
     <Platforms>x64;ARM64</Platforms>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageVersion>0.1.10.1</PackageVersion>
-    <Title>Planetarium.Cryptography.bls</Title>
+    <Title>Planetarium.Cryptography.BLS12_381</Title>
     <Authors>kolibriistda</Authors>
     <Description>This wrapper has not been audited, use it at your own risk.
 
@@ -39,8 +39,8 @@ Supports x64 architecture of Linux, Windows and OSX (including Apple Silicon.)</
     <RepositoryUrl>https://github.com/herumi/bls</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>bls herumi Cryptogrphy</PackageTags>
-    <PackageId>Planetarium.Cryptography.bls</PackageId>
-    <RootNamespace>Planetarium.Cryptography.bls</RootNamespace>
+    <PackageId>Planetarium.Cryptography.BLS12_381</PackageId>
+    <RootNamespace>Planetarium.Cryptography.BLS12_381</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
     <NoWin32Manifest>true</NoWin32Manifest>
@@ -82,12 +82,12 @@ Supports x64 architecture of Linux, Windows and OSX (including Apple Silicon.)</
     <Content Include="runtimes\osx-arm64\native\libmcl.1.dylib" PackagePath="runtimes\osx-arm64\native\libmcl.1.dylib" Link="runtimes\osx-arm64\native\libmcl.1.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Remove="Planetarium.Cryptography.bls.Test\**" />
+    <None Remove="Planetarium.Cryptography.BLS12_381.Test\**" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Remove="Planetarium.Cryptography.bls.Test\**" />
+    <EmbeddedResource Remove="Planetarium.Cryptography.BLS12_381.Test\**" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="Planetarium.Cryptography.bls.Test\**" />
+    <Compile Remove="Planetarium.Cryptography.BLS12_381.Test\**" />
   </ItemGroup>
 </Project>

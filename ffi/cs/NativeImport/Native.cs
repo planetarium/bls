@@ -1,6 +1,6 @@
 using System;
 
-namespace Planetarium.Cryptography.bls.NativeImport
+namespace Planetarium.Cryptography.BLS12_381.NativeImport
 {
     public abstract partial class Native
     {

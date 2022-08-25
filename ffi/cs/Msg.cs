@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Planetarium.Cryptography.bls
+namespace Planetarium.Cryptography.BLS12_381
 {
     /// <summary>
     /// A message struct of BLS signature.

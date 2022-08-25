@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planetarium.Cryptography.bls", "Planetarium.Cryptography.bls.csproj", "{D32C3C79-9139-4488-AAD0-B6D28868BBA1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planetarium.Cryptography.BLS12_381", "Planetarium.Cryptography.BLS12_381.csproj", "{D32C3C79-9139-4488-AAD0-B6D28868BBA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planetarium.Cryptography.bls.Test", "Planetarium.Cryptography.bls.Test\Planetarium.Cryptography.bls.Test.csproj", "{DC9054E2-5BD2-4676-B341-F9E15BD0646E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Planetarium.Cryptography.BLS12_381.Test", "Planetarium.Cryptography.BLS12_381.Test\Planetarium.Cryptography.BLS12_381.Test.csproj", "{DC9054E2-5BD2-4676-B341-F9E15BD0646E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

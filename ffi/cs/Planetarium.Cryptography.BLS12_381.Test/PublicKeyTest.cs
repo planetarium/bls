@@ -3,7 +3,7 @@ using System.IO;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Planetarium.Cryptography.bls.Test
+namespace Planetarium.Cryptography.BLS12_381.Test
 {
     public class PublicKeyTest
     {

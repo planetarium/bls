@@ -1,22 +1,22 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Planetarium.Cryptography.bls.Test
+namespace Planetarium.Cryptography.BLS12_381.Test
 {
-    public sealed class YAMLTestListBase
+    public sealed class YAMLTestSingleBase
     {
-        public Dictionary<string, List<string>> Input { get; set; }
+        public List<string> Input { get; set; }
 
         public string Output { get; set; }
 
-        public static YAMLTestListBase ParseTest(StreamReader yaml)
+        public static YAMLTestSingleBase ParseTest(StreamReader yaml)
         {
             var deserializer = new DeserializerBuilder().
                 WithNamingConvention(CamelCaseNamingConvention.Instance).
                 Build();
-            return deserializer.Deserialize<YAMLTestListBase>(yaml);
+            return deserializer.Deserialize<YAMLTestSingleBase>(yaml);
         }
     }
 }

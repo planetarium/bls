@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Xunit;
 
-namespace Planetarium.Cryptography.bls.Test
+namespace Planetarium.Cryptography.BLS12_381.Test
 {
     public class NativeTest
     {

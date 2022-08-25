@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using Planetarium.Cryptography.bls.NativeImport;
+using Planetarium.Cryptography.BLS12_381.NativeImport;
 
-namespace Planetarium.Cryptography.bls
+namespace Planetarium.Cryptography.BLS12_381
 {
     /// <summary>
     /// A Secret key struct of BLS signature.
