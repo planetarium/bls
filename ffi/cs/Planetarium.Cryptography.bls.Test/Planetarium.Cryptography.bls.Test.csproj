@@ -12,7 +12,7 @@
 
         <Configurations>Debug;Release</Configurations>
 
-        <Platforms>x64</Platforms>
+        <Platforms>x64;ARM64</Platforms>
 
         <RootNamespace>Planetarium.Cryptography.bls.Test</RootNamespace>
     </PropertyGroup>
